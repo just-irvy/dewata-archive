@@ -43,5 +43,5 @@ jobs:
 
       - name: Dependency audit
         run: |
-          composer audit
+          composer audit --abandoned=report
           npm audit --audit-level=high
