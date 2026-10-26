@@ -1,0 +1,192 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+/*
+| Token The Dewata Archive. Nilai awal mengikuti FILE 04.
+| Kontras diukur terhadap Archive Paper (#F6F0E4) dan Soft White (#FAF7F0):
+|   ink          13.5 / 14.3    teks utama
+|   ink-soft      6.8 / 7.2     teks sekunder, caption
+|   rust          5.4 / 5.7     CTA, tautan. Teks putih di atas rust 5.7
+|   rust-deep     7.1 / 7.5     hover dan active
+|   moss          5.0 / 5.3     status sekunder (boleh untuk teks kecil)
+|   oxblood       8.8 / 9.4     pesan error
+|   brass         2.8           hanya garis dan ornamen, jangan untuk teks
+*/
+@theme {
+    --color-paper: #f6f0e4;
+    --color-surface: #faf7f0;
+    --color-ink: #202723;
+    --color-ink-soft: #4b554f;
+    --color-rust: #9c4935;
+    --color-rust-deep: #843a29;
+    --color-brass: #b18a50;
+    --color-moss: #5c6b56;
+    --color-oxblood: #7a2418;
+
+    --font-display: 'Playfair Display Variable', 'Playfair Display', 'Lora', Georgia, serif;
+    --font-body: 'Inter Variable', 'Inter', system-ui, sans-serif;
+    --font-typewriter: 'Courier Prime', 'Special Elite', 'Courier New', monospace;
+
+    --radius-control: 3px;
+}
+
+@layer base {
+    html {
+        background-color: var(--color-paper);
+        color: var(--color-ink);
+        font-family: var(--font-body);
+        font-size: 100%;
+        line-height: 1.6;
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        min-height: 100dvh;
+    }
+
+    h1, h2, h3 {
+        font-family: var(--font-display);
+        font-weight: 700;
+        line-height: 1.12;
+        letter-spacing: -0.01em;
+        text-wrap: balance;
+    }
+
+    p, li {
+        text-wrap: pretty;
+    }
+
+    ::selection {
+        background-color: var(--color-ink);
+        color: var(--color-paper);
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-ink);
+        outline-offset: 3px;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}
+
+@layer components {
+    /* Teks pendek bergaya mesin tik: tanggal, nomor arsip, tanggal verifikasi, label rute. */
+    .typewriter {
+        font-family: var(--font-typewriter);
+        font-size: 0.8125rem;
+        line-height: 1.4;
+        color: var(--color-ink-soft);
+    }
+
+    /* Label metadata kecil. Huruf kapital hanya di sini, tidak di judul atau tombol. */
+    .meta {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--color-ink-soft);
+    }
+
+    .rule-hairline {
+        border-top: 1px solid color-mix(in srgb, var(--color-brass) 70%, transparent);
+    }
+
+    /* Tombol: satu primary, satu secondary, satu tautan. Tinggi minimal 44px untuk sentuh. */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 2.75rem;
+        padding: 0.5rem 1.25rem;
+        border: 1.5px solid transparent;
+        border-radius: var(--radius-control);
+        font-family: var(--font-body);
+        font-size: 0.9375rem;
+        font-weight: 600;
+        line-height: 1.2;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+    }
+
+    .btn-primary {
+        background-color: var(--color-rust);
+        color: var(--color-surface);
+    }
+    .btn-primary:hover { background-color: var(--color-rust-deep); }
+    .btn-primary:active { background-color: var(--color-ink); }
+
+    .btn-secondary {
+        background-color: transparent;
+        border-color: var(--color-ink);
+        color: var(--color-ink);
+    }
+    .btn-secondary:hover { background-color: var(--color-ink); color: var(--color-paper); }
+
+    .btn-link {
+        min-height: 2.75rem;
+        padding-inline: 0.25rem;
+        color: var(--color-rust);
+        text-decoration: underline;
+        text-underline-offset: 0.25em;
+        text-decoration-thickness: 1px;
+    }
+    .btn-link:hover { color: var(--color-rust-deep); text-decoration-thickness: 2px; }
+
+    .btn:disabled,
+    .btn[aria-disabled='true'] {
+        opacity: 0.45;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .btn[aria-busy='true'] {
+        cursor: progress;
+    }
+
+    /* Form */
+    .field { display: flex; flex-direction: column; gap: 0.375rem; }
+    .field-label { font-size: 0.9375rem; font-weight: 600; }
+    .field-optional { font-weight: 400; color: var(--color-ink-soft); }
+    .field-hint { font-size: 0.875rem; color: var(--color-ink-soft); }
+
+    .field-input {
+        width: 100%;
+        min-height: 2.75rem;
+        padding: 0.5rem 0.75rem;
+        background-color: var(--color-surface);
+        border: 1.5px solid var(--color-ink);
+        border-radius: var(--radius-control);
+        font: inherit;
+        color: var(--color-ink);
+    }
+    .field-input:hover { border-color: var(--color-rust); }
+    .field-input:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* Error dibedakan oleh garis tebal, ikon, dan teks, bukan hanya warna. */
+    .field-input-error { border-width: 3px; border-color: var(--color-oxblood); }
+    .field-error {
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-start;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--color-oxblood);
+    }
+}
