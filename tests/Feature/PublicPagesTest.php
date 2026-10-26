@@ -3,11 +3,13 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Support\WithoutViteAssets;
 use Tests\TestCase;
 
 class PublicPagesTest extends TestCase
 {
     use RefreshDatabase;
+    use WithoutViteAssets;
 
     public function test_public_pages_render(): void
     {

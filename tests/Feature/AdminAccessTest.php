@@ -5,12 +5,14 @@ namespace Tests\Feature;
 use App\Enums\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\BuildsArchiveData;
+use Tests\Support\WithoutViteAssets;
 use Tests\TestCase;
 
 class AdminAccessTest extends TestCase
 {
     use BuildsArchiveData;
     use RefreshDatabase;
+    use WithoutViteAssets;
 
     public function test_guest_is_sent_to_login(): void
     {

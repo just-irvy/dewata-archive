@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\HotelType;
 use App\Enums\PriceBasis;
 use App\Enums\PublishStatus;
 use App\Enums\VerificationStatus;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Hotel extends Model
 {
+    use HasFactory;
     use SoftDeletes;
 
     protected $fillable = [
@@ -29,6 +32,7 @@ class Hotel extends Model
             'lng' => 'float',
             'price_min' => 'integer',
             'price_max' => 'integer',
+            'type' => HotelType::class,
             'price_basis' => PriceBasis::class,
             'price_status' => VerificationStatus::class,
             'status' => PublishStatus::class,

@@ -4,11 +4,14 @@ namespace App\Models;
 
 use App\Enums\RegionType;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Region extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['name', 'slug', 'region_type', 'description', 'is_published'];
 
     protected function casts(): array

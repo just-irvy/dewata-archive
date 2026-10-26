@@ -1,15 +1,16 @@
-@props(['name', 'label', 'type' => 'text', 'hint' => null, 'value' => null, 'required' => false, 'error' => null])
+@props(['name', 'label', 'type' => 'text', 'hint' => null, 'value' => null, 'required' => false, 'error' => null, 'hideLabel' => false])
 
 @php
-    $id = $attributes->get('id', $name);
-    $error = $error ?: $errors->first($name);
+    $dot = \App\Support\FieldName::dot($name);
+    $id = $attributes->get('id', \App\Support\FieldName::id($name));
+    $error = $error ?: $errors->first($dot);
     $describedBy = collect([$hint ? $id.'-hint' : null, $error ? $id.'-error' : null])->filter()->implode(' ');
-    $current = $type === 'password' ? '' : old($name, $value);
+    $current = $type === 'password' ? '' : old($dot, $value);
 @endphp
 
 <div class="field">
-    <label for="{{ $id }}" class="field-label">
-        {{ $label }}@unless ($required)<span class="field-optional"> (opsional)</span>@endunless
+    <label for="{{ $id }}" @class(['field-label', 'sr-only' => $hideLabel])>
+        {{ $label }}@if (! $required && ! $hideLabel)<span class="field-optional"> (opsional)</span>@endif
     </label>
 
     @if ($hint)

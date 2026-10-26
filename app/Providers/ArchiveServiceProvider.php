@@ -2,7 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\Category;
+use App\Models\Media;
 use App\Models\Place;
+use App\Models\Region;
+use App\Models\Tag;
+use App\Policies\AdminOnlyPolicy;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
@@ -22,6 +27,10 @@ class ArchiveServiceProvider extends ServiceProvider
 
         // Operasi berisiko tinggi hanya untuk super-admin. Tidak ada Gate::before,
         // sehingga super-admin tetap tunduk pada policy kepemilikan rencana.
+        foreach ([Region::class, Category::class, Tag::class, Media::class] as $model) {
+            Gate::policy($model, AdminOnlyPolicy::class);
+        }
+
         Gate::define('view-audit-logs', fn ($user) => $user->isSuperAdmin());
         Gate::define('manage-roles', fn ($user) => $user->isSuperAdmin());
 

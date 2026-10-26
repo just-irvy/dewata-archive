@@ -38,4 +38,19 @@ trait BuildsArchiveData
 
         return $place;
     }
+
+    /** Payload form tempat yang valid. Timpa kunci yang ingin diuji. */
+    protected function placePayload(array $overrides = []): array
+    {
+        return array_replace([
+            'region_id' => Region::factory()->create()->id,
+            'name' => 'Pura Uji Tirta',
+            'summary' => 'Pura kecil di tepi sawah.',
+            'lat' => '-8.5069000',
+            'lng' => '115.2625000',
+            'verification_status' => 'unknown',
+            'opening_hours_status' => 'unknown',
+            'accessibility_status' => 'unknown',
+        ], $overrides);
+    }
 }
