@@ -49,13 +49,13 @@ class ApplyResearchCommandTest extends TestCase
 
     private function draft(string $externalId, array $extra = []): Place
     {
-        return Place::factory()->create([
+        return Place::factory()->create(array_replace([
             'external_id' => $externalId,
             'summary' => '',
             'source_url' => null,
             'verified_at' => null,
             'verification_status' => VerificationStatus::Unknown,
-        ] + $extra);
+        ], $extra));
     }
 
     private function row(string $id, string $name, string $summary = 'Museum kecil yang menyimpan peralatan upacara umat Hindu Bali.', array $extra = []): array

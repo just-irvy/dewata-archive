@@ -21,7 +21,7 @@ class ImportPhotos extends Command
         {--path= : Folder berisi places/ dan hotels/ (bawaan: storage/app/photos-import)}
         {--credit= : Kredit untuk semua foto, misalnya nama fotografer atau pemilik}
         {--license= : Lisensi atau izin, misalnya "izin tertulis" atau "CC BY 4.0"}
-        {--alt= : Template alt text, {nama} diganti nama tempat (bawaan: "Foto {nama}")}
+        {--alt= : Template alt text dengan token nama yang diganti nama tempat}
         {--max-width=2000 : Foto yang lebih lebar diperkecil ke lebar ini}
         {--dry-run : Hanya menampilkan rencana, tidak menulis apa pun}';
 
@@ -228,12 +228,14 @@ class ImportPhotos extends Command
             $this->line("Dilewati karena sudah ada: {$duplicate}");
         }
 
-        foreach ([
-            'Tidak cocok dengan tempat atau hotel mana pun (periksa ejaan nama berkas)' => $unmatched,
-            'Nama ambigu, cocok dengan lebih dari satu record' => $ambiguous,
-            'Dilewati karena tanpa kredit atau lisensi' => $noRights,
-            'Tidak valid' => $invalid,
-        ] as $title => $items) {
+        foreach (
+            [
+                'Tidak cocok dengan tempat atau hotel mana pun (periksa ejaan nama berkas)' => $unmatched,
+                'Nama ambigu, cocok dengan lebih dari satu record' => $ambiguous,
+                'Dilewati karena tanpa kredit atau lisensi' => $noRights,
+                'Tidak valid' => $invalid,
+            ] as $title => $items
+        ) {
             if ($items !== []) {
                 $this->warn($title.': '.count($items));
                 foreach (array_slice($items, 0, 25) as $item) {
@@ -248,8 +250,10 @@ class ImportPhotos extends Command
         $this->newLine();
         $this->line(sprintf(
             'Tempat tanpa foto: %d dari %d. Hotel tanpa foto: %d dari %d.',
-            Place::query()->doesntHave('media')->count(), Place::query()->count(),
-            Hotel::query()->doesntHave('media')->count(), Hotel::query()->count(),
+            Place::query()->doesntHave('media')->count(),
+            Place::query()->count(),
+            Hotel::query()->doesntHave('media')->count(),
+            Hotel::query()->count(),
         ));
     }
 }

@@ -493,8 +493,14 @@ final class DatasetMapper
         $withUrl = count(array_filter($mapped, fn (MappedRow $r) => ! empty($r->payload['source_url'])));
         $verified = count(array_filter($mapped, fn (MappedRow $r) => ! empty($r->payload['verified_at'])));
 
+        $hasSourceColumn = $total > 0 && array_key_exists('source_url', $raw[0]);
+
         $parts = [];
-        $parts[] = $withUrl === 0 ? 'Tidak ada tautan sumber' : "{$withUrl} dari {$total} baris punya tautan sumber, sisanya belum";
+        $parts[] = ! $hasSourceColumn
+            ? 'Tidak ada kolom sumber'
+            : ($withUrl === 0
+                ? 'Tidak ada tautan sumber'
+                : "{$withUrl} dari {$total} baris punya tautan sumber, sisanya belum");
         $parts[] = $verified === 0
             ? 'tidak ada tanggal verifikasi'
             : "{$verified} baris punya tanggal verifikasi (status \"Perlu ditinjau\" kecuali ditandai lain), sisanya belum";

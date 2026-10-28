@@ -78,7 +78,11 @@ class ImageProcessorTest extends TestCase
 
         ImageProcessor::process($source, "{$this->dir}/out.jpg", 2000);
 
-        $this->assertEmpty(@exif_read_data("{$this->dir}/out.jpg")['Orientation'] ?? null);
+        $metadata = @exif_read_data("{$this->dir}/out.jpg");
+
+        $this->assertFalse(
+            is_array($metadata) && array_key_exists('Orientation', $metadata)
+        );
     }
 
     public function test_only_real_jpg_png_and_webp_files_are_accepted(): void

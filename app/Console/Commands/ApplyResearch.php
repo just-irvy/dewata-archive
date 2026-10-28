@@ -56,8 +56,17 @@ class ApplyResearch extends Command
         );
 
         $apply = (bool) $this->option('apply');
-        $stats = ['filled' => 0, 'summary' => 0, 'source' => 0, 'verification' => 0, 'area' => 0,
-            'missing' => 0, 'not_draft' => 0, 'nothing' => 0, 'error' => 0];
+        $stats = [
+            'filled' => 0,
+            'summary' => 0,
+            'source' => 0,
+            'verification' => 0,
+            'area' => 0,
+            'missing' => 0,
+            'not_draft' => 0,
+            'nothing' => 0,
+            'error' => 0,
+        ];
         $changedNames = [];
 
         foreach ($mapper->mapAll($parsed['rows'])['rows'] as $row) {
@@ -136,10 +145,21 @@ class ApplyResearch extends Command
             }
         }
 
-        $this->info(($apply ? 'Diisi' : 'SIMULASI, belum ada yang diubah. Akan diisi').": {$stats['filled']} draf.");
-        $this->line("Ringkasan: {$stats['summary']}. Sumber: {$stats['source']}. Tanggal dan status verifikasi: {$stats['verification']}. Label area: {$stats['area']}.");
-        $this->line("Dilewati: tidak ada di database {$stats['missing']}, bukan draf {$stats['not_draft']}, tidak ada yang perlu diisi {$stats['nothing']}, baris bermasalah {$stats['error']}.");
+        if ($apply) {
+            $this->info("Diisi: {$stats['filled']} draf.");
+        } else {
+            $this->warn('SIMULASI, belum ada yang diubah.');
+            $this->line("Akan diisi: {$stats['filled']} draf.");
+        }
 
+        $this->line("Ringkasan: {$stats['summary']}");
+        $this->line("Sumber: {$stats['source']}");
+        $this->line("Tanggal dan status verifikasi: {$stats['verification']}");
+        $this->line("Label area: {$stats['area']}");
+        $this->line("Dilewati: tidak ada di database {$stats['missing']}");
+        $this->line("Dilewati: bukan draf {$stats['not_draft']}");
+        $this->line("Dilewati: tidak ada yang perlu diisi {$stats['nothing']}");
+        $this->line("Baris bermasalah: {$stats['error']}");
         foreach (array_slice($changedNames, 0, 15) as $name) {
             $this->line("  - {$name}");
         }
