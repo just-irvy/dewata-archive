@@ -12,9 +12,7 @@ final class HotelSearch
     /**
      * @param  array{region?: ?string, type?: ?string, min?: ?int, max?: ?int, sort?: ?string}  $filters
      */
-    public function __construct(private readonly array $filters = [])
-    {
-    }
+    public function __construct(private readonly array $filters = []) {}
 
     public function query(): Builder
     {

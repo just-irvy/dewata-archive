@@ -14,9 +14,7 @@ use Laravel\Fortify\Contracts\FailedPasswordResetLinkRequestResponse;
  */
 class NeutralPasswordResetResponse implements FailedPasswordResetLinkRequestResponse
 {
-    public function __construct(protected string $status)
-    {
-    }
+    public function __construct(protected string $status) {}
 
     public function toResponse($request)
     {

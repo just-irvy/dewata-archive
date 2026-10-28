@@ -16,6 +16,5 @@ final class ImportContext
         public readonly array $existingExternalIds = [],
         public readonly array $existingPlaceSlugs = [],
         public readonly array $existingHotelSlugs = [],
-    ) {
-    }
+    ) {}
 }

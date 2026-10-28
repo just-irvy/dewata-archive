@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\HotelType;
 use App\Enums\PriceBasis;
 use App\Enums\PublishStatus;
 use App\Enums\UserRole;
@@ -9,6 +10,7 @@ use App\Enums\VerificationStatus;
 use App\Models\AuditLog;
 use App\Models\Hotel;
 use App\Models\ImportBatch;
+use App\Models\Media;
 use App\Models\Place;
 use App\Models\Region;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -224,7 +226,7 @@ class ImportFlowTest extends TestCase
     {
         $batch = $this->stageAndCommit();
         $place = Place::query()->where('external_id', 'combined150:3')->firstOrFail();
-        \App\Models\Media::factory()->for($place, 'mediable')->create();
+        Media::factory()->for($place, 'mediable')->create();
 
         $this->actingAs($this->makeUser(UserRole::SuperAdmin))->post("/admin/imports/{$batch->id}/rollback");
 
@@ -315,7 +317,7 @@ class ImportFlowTest extends TestCase
         $this->assertNull($cafe->source_url);
 
         $hotel = Hotel::query()->firstOrFail();
-        $this->assertSame(\App\Enums\HotelType::Villa, $hotel->type);
+        $this->assertSame(HotelType::Villa, $hotel->type);
         $this->assertSame(PriceBasis::Provider, $hotel->price_basis);
         $this->assertSame(759033, $hotel->price_min);
         $this->assertSame(VerificationStatus::Unknown, $hotel->price_status);

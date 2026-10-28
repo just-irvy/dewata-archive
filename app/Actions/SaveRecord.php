@@ -15,16 +15,14 @@ use Illuminate\Support\Str;
  */
 final class SaveRecord
 {
-    public function __construct(private readonly RecordAudit $audit)
-    {
-    }
+    public function __construct(private readonly RecordAudit $audit) {}
 
     /**
      * @param  array<string, mixed>  $data  Data tervalidasi, masuk lewat fill().
      * @param  array<string, mixed>  $forced  Atribut yang diatur sistem pada setiap simpan.
      * @param  array<string, mixed>  $forcedOnCreate  Atribut yang diatur sistem hanya saat membuat.
      * @param  Closure(Model, array<int, string>): array<string, mixed>|null  $afterSave  Dipanggil
-     *         di dalam transaksi. Hasilnya (misalnya perubahan pivot) ikut dicatat di audit.
+     *                                                                                    di dalam transaksi. Hasilnya (misalnya perubahan pivot) ikut dicatat di audit.
      */
     public function __invoke(
         Model $record,

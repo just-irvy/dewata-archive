@@ -10,7 +10,6 @@ use App\Enums\VerificationStatus;
 use App\Models\Category;
 use App\Models\Hotel;
 use App\Models\ImportBatch;
-use App\Models\ImportRow;
 use App\Models\Place;
 use App\Models\Region;
 use App\Models\Tag;
@@ -26,9 +25,7 @@ use Illuminate\Support\Facades\DB;
  */
 final class CommitImport
 {
-    public function __construct(private readonly RecordAudit $audit)
-    {
-    }
+    public function __construct(private readonly RecordAudit $audit) {}
 
     /** @return array{created_places: int, created_hotels: int, skipped: int, errors: int} */
     public function __invoke(ImportBatch $batch, User $actor): array

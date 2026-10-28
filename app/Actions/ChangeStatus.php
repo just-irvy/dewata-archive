@@ -18,9 +18,7 @@ use Illuminate\Support\Str;
 /** Satu-satunya jalur mengubah status terbit. Menerbitkan wajib lolos pemeriksaan kesiapan. */
 final class ChangeStatus
 {
-    public function __construct(private readonly RecordAudit $audit)
-    {
-    }
+    public function __construct(private readonly RecordAudit $audit) {}
 
     public static function readinessFor(Model $record): Readiness
     {

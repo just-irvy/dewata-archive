@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Imports\CsvReader;
 use App\Imports\DatasetMapper;
 use App\Imports\ImportContext;
+use App\Imports\ImportFormatException;
 use App\Imports\MappedRow;
 use App\Models\Hotel;
 use App\Models\ImportBatch;
@@ -21,11 +22,9 @@ use Illuminate\Support\Str;
  */
 final class StageImport
 {
-    public function __construct(private readonly RecordAudit $audit)
-    {
-    }
+    public function __construct(private readonly RecordAudit $audit) {}
 
-    /** @throws \App\Imports\ImportFormatException */
+    /** @throws ImportFormatException */
     public function __invoke(UploadedFile $file, User $actor): ImportBatch
     {
         $config = config('archive.import');

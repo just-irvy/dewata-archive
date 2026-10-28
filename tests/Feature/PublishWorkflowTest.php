@@ -12,6 +12,7 @@ use App\Models\Media;
 use App\Models\Place;
 use App\Models\Region;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\Support\BuildsArchiveData;
 use Tests\Support\WithoutViteAssets;
 use Tests\TestCase;
@@ -22,7 +23,7 @@ class PublishWorkflowTest extends TestCase
     use RefreshDatabase;
     use WithoutViteAssets;
 
-    private function publish(string $type, int $id, string $to = 'published'): \Illuminate\Testing\TestResponse
+    private function publish(string $type, int $id, string $to = 'published'): TestResponse
     {
         return $this->actingAs($this->makeUser(UserRole::Admin))->post("/admin/{$type}/{$id}/status", ['to' => $to]);
     }

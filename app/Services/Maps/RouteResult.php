@@ -12,8 +12,7 @@ final class RouteResult
         public readonly bool $ok,
         public readonly array $legs = [],
         public readonly ?string $error = null,
-    ) {
-    }
+    ) {}
 
     /** @param  array<int, array{distance_m: int, duration_s: int}>  $legs */
     public static function ok(array $legs): self

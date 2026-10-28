@@ -25,6 +25,5 @@ final class RouteQuery
         public readonly array $destination,
         public readonly array $intermediates = [],
         public readonly TravelMode $mode = TravelMode::Driving,
-    ) {
-    }
+    ) {}
 }

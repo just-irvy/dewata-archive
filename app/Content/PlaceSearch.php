@@ -17,9 +17,7 @@ final class PlaceSearch
     /**
      * @param  array{q?: ?string, region?: ?string, category?: ?string, tags?: array<int, string>, access?: array<int, string>, sort?: ?string}  $filters
      */
-    public function __construct(private readonly array $filters = [])
-    {
-    }
+    public function __construct(private readonly array $filters = []) {}
 
     public function query(): Builder
     {

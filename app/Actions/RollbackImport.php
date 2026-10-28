@@ -18,9 +18,7 @@ use Illuminate\Support\Facades\DB;
  */
 final class RollbackImport
 {
-    public function __construct(private readonly RecordAudit $audit)
-    {
-    }
+    public function __construct(private readonly RecordAudit $audit) {}
 
     /** @return array{removed: int, kept: array<int, array{name: string, reason: string}>} */
     public function __invoke(ImportBatch $batch, User $actor): array

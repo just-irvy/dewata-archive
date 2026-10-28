@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\ChangeStatus;
-use App\Content\HotelReadiness;
 use App\Actions\RecordAudit;
 use App\Actions\SaveRecord;
+use App\Content\HotelReadiness;
 use App\Enums\PublishStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\HotelRequest;

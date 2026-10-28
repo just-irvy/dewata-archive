@@ -13,9 +13,7 @@ use Illuminate\Support\Str;
  */
 final class RecordAudit
 {
-    public function __construct(private readonly Request $request)
-    {
-    }
+    public function __construct(private readonly Request $request) {}
 
     public function __invoke(string $action, Model $entity, ?array $before = null, ?array $after = null): AuditLog
     {

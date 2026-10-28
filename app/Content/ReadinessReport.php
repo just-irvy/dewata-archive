@@ -12,8 +12,7 @@ final class ReadinessReport
     public function __construct(
         public readonly array $blockers = [],
         public readonly array $warnings = [],
-    ) {
-    }
+    ) {}
 
     public function passes(): bool
     {

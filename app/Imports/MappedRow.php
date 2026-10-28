@@ -15,8 +15,7 @@ final class MappedRow
         public array $payload,
         public array $issues = [],
         public string $action = 'create',
-    ) {
-    }
+    ) {}
 
     public function hasError(): bool
     {
