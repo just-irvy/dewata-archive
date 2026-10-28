@@ -12,7 +12,6 @@ use App\Models\Media;
 use App\Models\Place;
 use App\Models\Region;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Testing\TestResponse;
 use Tests\Support\BuildsArchiveData;
 use Tests\Support\WithoutViteAssets;
 use Tests\TestCase;
@@ -23,7 +22,7 @@ class PublishWorkflowTest extends TestCase
     use RefreshDatabase;
     use WithoutViteAssets;
 
-    private function publish(string $type, int $id, string $to = 'published'): TestResponse
+    private function publish(string $type, int $id, string $to = 'published'): \Illuminate\Testing\TestResponse
     {
         return $this->actingAs($this->makeUser(UserRole::Admin))->post("/admin/{$type}/{$id}/status", ['to' => $to]);
     }
@@ -99,36 +98,21 @@ class PublishWorkflowTest extends TestCase
 
     public function test_hotel_with_price_needs_a_verified_price_status(): void
     {
-        $hotel = Hotel::factory()->ready()->create([
-            'price_min' => 400000,
-            'price_basis' => PriceBasis::Curated,
-        ]);
+        $hotel = Hotel::factory()->ready()->create(['price_min' => 400000, 'price_basis' => PriceBasis::Curated]);
 
-        // Percobaan pertama harus ditolak karena harga belum terverifikasi.
-        $this->publish('hotels', $hotel->id)
-            ->assertRedirect()
-            ->assertSessionHasErrors();
+        $this->publish('hotels', $hotel->id)->assertSessionHasErrors('publish');
 
-        // Verifikasi harga, kemudian coba terbitkan kembali.
         $hotel->forceFill(['price_status' => 'verified'])->save();
 
-        $this->publish('hotels', $hotel->id)
-            ->assertRedirect()
-            ->assertSessionHasNoErrors();
-
-        $this->assertSame(
-            PublishStatus::Published,
-            $hotel->fresh()->status
-        );
+        $this->publish('hotels', $hotel->id)->assertSessionHasNoErrors();
+        $this->assertSame(PublishStatus::Published, $hotel->fresh()->status);
     }
 
     public function test_hotel_without_price_can_be_published_with_a_warning_only(): void
     {
         $hotel = Hotel::factory()->ready()->create();
 
-        $this->publish('hotels', $hotel->id)
-            ->assertRedirect()
-            ->assertSessionHasNoErrors();
+        $this->publish('hotels', $hotel->id)->assertSessionHasNoErrors();
         $this->assertSame(PublishStatus::Published, $hotel->fresh()->status);
     }
 

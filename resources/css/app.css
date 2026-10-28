@@ -56,6 +56,15 @@
         text-wrap: balance;
     }
 
+    /*
+    | Playfair Display memakai angka gaya lama (old-style) secara bawaan, sehingga "0" tampak seperti
+    | huruf o dan "150" naik turun. Angka pada statistik, harga, dan tanggal harus sejajar.
+    | Fitur lnum ada pada berkas font yang dipakai (diperiksa pada GSUB paket Fontsource).
+    */
+    h1, h2, h3, .font-display {
+        font-variant-numeric: lining-nums;
+    }
+
     p, li {
         text-wrap: pretty;
     }
@@ -159,6 +168,27 @@
     .btn[aria-busy='true'] {
         cursor: progress;
     }
+
+    /* Pin peta. Isinya nomor urutan (D1·1) atau H untuk hotel, bukan ikon dekoratif. */
+    .archive-pin {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.75rem;
+        height: 1.75rem;
+        padding-inline: 0.4rem;
+        background-color: var(--color-ink);
+        color: var(--color-paper);
+        border: 2px solid var(--color-paper);
+        border-radius: 2px;
+        font-family: var(--font-typewriter);
+        font-size: 0.75rem;
+        font-weight: 700;
+        line-height: 1;
+        box-shadow: 0 0 0 1px var(--color-ink);
+    }
+    .archive-pin-hotel { background-color: var(--color-rust); }
+    .archive-pin-dot { min-width: 0.9rem; width: 0.9rem; height: 0.9rem; padding: 0; border-radius: 999px; }
 
     /* Form */
     .field { display: flex; flex-direction: column; gap: 0.375rem; }

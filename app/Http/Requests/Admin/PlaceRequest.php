@@ -27,14 +27,16 @@ class PlaceRequest extends AdminRequest
             $slug = $this->place()->slug;
         }
 
-        $this->merge(['slug' => $slug]);
+        $this->merge(['slug' => $slug, 'is_featured' => $this->boolean('is_featured')]);
     }
 
     public function rules(): array
     {
         return [
             'region_id' => ['required', 'integer', 'exists:regions,id'],
+            'is_featured' => ['boolean'],
             'name' => ['required', 'string', 'max:150'],
+            'area_label' => ['nullable', 'string', 'max:100'],
             'slug' => ['required', 'string', 'max:160', Rule::unique('places', 'slug')->ignore($this->place()?->id)],
             'summary' => ['required', 'string', 'max:300'],
             'body' => ['nullable', 'string', 'max:20000'],
@@ -98,7 +100,7 @@ class PlaceRequest extends AdminRequest
     {
         $validated = $this->validated();
 
-        return Arr::except($validated, ['hours', 'accessibility', 'category_ids', 'tag_ids']) + [
+        return Arr::except($validated, ['hours', 'accessibility', 'category_ids', 'tag_ids', 'is_featured']) + [
             'opening_hours' => $this->normalizedHours($validated['hours'] ?? []),
             'accessibility' => $this->normalizedAccessibility($validated['accessibility'] ?? []),
         ];

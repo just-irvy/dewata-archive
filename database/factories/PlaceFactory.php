@@ -48,4 +48,9 @@ class PlaceFactory extends Factory
             'published_at' => now(),
         ]);
     }
+
+    public function featured(): static
+    {
+        return $this->state(['featured_at' => now()]);
+    }
 }

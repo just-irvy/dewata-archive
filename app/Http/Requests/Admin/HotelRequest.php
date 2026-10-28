@@ -35,6 +35,7 @@ class HotelRequest extends AdminRequest
         return [
             'region_id' => ['required', 'integer', 'exists:regions,id'],
             'name' => ['required', 'string', 'max:150'],
+            'area_label' => ['nullable', 'string', 'max:100'],
             'slug' => ['required', 'string', 'max:160', Rule::unique('hotels', 'slug')->ignore($this->hotel()?->id)],
             'type' => ['required', Rule::enum(HotelType::class)],
             'address' => ['nullable', 'string', 'max:255'],

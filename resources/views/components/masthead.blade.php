@@ -62,12 +62,18 @@
                     </li>
                 @endforeach
             </ul>
-            <x-button :href="route('planner.index')" class="my-2">{{ __('ui.nav.planner') }}</x-button>
+            @if (config('archive.features.planner'))
+                <x-button :href="route('planner.index')" class="my-2">{{ __('ui.nav.planner') }}</x-button>
+            @endif
         </nav>
 
         {{-- Navigasi mobile: tombol Planner tetap terlihat tanpa membuka menu --}}
         <div class="flex items-center justify-between gap-3 border-t border-ink/20 py-2 md:hidden">
-            <x-button :href="route('planner.index')">{{ __('ui.nav.planner') }}</x-button>
+            @if (config('archive.features.planner'))
+                <x-button :href="route('planner.index')">{{ __('ui.nav.planner') }}</x-button>
+            @else
+                <span></span>
+            @endif
             <button
                 type="button"
                 class="btn btn-secondary"

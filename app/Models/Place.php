@@ -22,7 +22,7 @@ class Place extends Model
      * Perubahannya lewat Action publikasi agar tercatat di audit log.
      */
     protected $fillable = [
-        'region_id', 'name', 'slug', 'summary', 'body', 'lat', 'lng', 'address',
+        'region_id', 'area_label', 'name', 'slug', 'summary', 'body', 'lat', 'lng', 'address',
         'verification_status', 'source_url', 'verified_at', 'source_updated_at',
         'external_id', 'attribution', 'typical_visit_minutes', 'price_info',
         'opening_hours', 'opening_hours_status', 'accessibility', 'accessibility_status',
@@ -42,12 +42,19 @@ class Place extends Model
             'verified_at' => 'datetime',
             'source_updated_at' => 'datetime',
             'published_at' => 'datetime',
+            'featured_at' => 'datetime',
         ];
     }
 
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', PublishStatus::Published->value);
+    }
+
+    /** Foto utama: foto pertama yang punya alt text dan hak pakai. Relasi media harus sudah dimuat. */
+    public function heroMedia(): ?Media
+    {
+        return $this->media->first(fn (Media $media) => $media->isPublishable());
     }
 
     public function isPublished(): bool

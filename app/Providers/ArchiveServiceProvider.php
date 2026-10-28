@@ -8,17 +8,31 @@ use App\Models\Place;
 use App\Models\Region;
 use App\Models\Tag;
 use App\Policies\AdminOnlyPolicy;
+use App\Services\Maps\GoogleRoutesProvider;
+use App\Services\Maps\NullRouteProvider;
+use App\Services\Maps\RouteProvider;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
 class ArchiveServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        $this->app->bind(RouteProvider::class, fn () => filled(config('archive.maps.server_key'))
+            ? new GoogleRoutesProvider
+            : new NullRouteProvider);
+    }
+
     public function boot(): void
     {
+        Paginator::defaultView('vendor.pagination.archive');
+        Paginator::defaultSimpleView('vendor.pagination.archive');
+
         // Kebijakan password: 10 karakter, dan di production dicek terhadap kebocoran data.
         Password::defaults(fn () => Password::min(10)->when(
             $this->app->isProduction(),
@@ -31,16 +45,23 @@ class ArchiveServiceProvider extends ServiceProvider
             Gate::policy($model, AdminOnlyPolicy::class);
         }
 
+        Gate::define('manage-imports', fn ($user) => $user->isAdmin());
+        Gate::define('rollback-import', fn ($user) => $user->isSuperAdmin());
         Gate::define('view-audit-logs', fn ($user) => $user->isSuperAdmin());
         Gate::define('manage-roles', fn ($user) => $user->isSuperAdmin());
 
         // Status pembaruan data untuk footer. Di-cache agar tidak query tiap halaman.
         View::composer('components.site-footer', function ($view) {
-            $timestamp = Cache::remember('archive.last_content_update', now()->addMinutes(10), function () {
-                $value = Place::query()->published()->max('updated_at');
+            // Footer tidak boleh ikut menjatuhkan halaman error saat database bermasalah.
+            try {
+                $timestamp = Cache::remember('archive.last_content_update', now()->addMinutes(10), function () {
+                    $value = Place::query()->published()->max('updated_at');
 
-                return $value ? Carbon::parse($value)->toIso8601String() : null;
-            });
+                    return $value ? Carbon::parse($value)->toIso8601String() : null;
+                });
+            } catch (\Throwable) {
+                $timestamp = null;
+            }
 
             $view->with('lastUpdated', $timestamp ? Carbon::parse($timestamp) : null);
         });

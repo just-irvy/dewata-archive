@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\Dev;
 use App\Http\Controllers\Site;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Route;
@@ -11,17 +12,32 @@ use Illuminate\Support\Facades\Route;
 | yang tertulis pada nilai 'phase' (lihat FILE 18).
 */
 
-Route::view('/', 'pages.home')->name('home');
+Route::get('/', Site\HomeController::class)->name('home');
 Route::view('/about', 'pages.about')->name('about');
 
-Route::view('/places', 'pages.pending', ['title' => 'Jelajah', 'phase' => 2])->name('places.index');
+Route::get('/places', [Site\PlaceController::class, 'index'])->name('places.index');
 Route::get('/places/{slug}', [Site\PlaceController::class, 'show'])->name('places.show');
-Route::view('/regions', 'pages.pending', ['title' => 'Wilayah', 'phase' => 2])->name('regions.index');
-Route::view('/hotels', 'pages.pending', ['title' => 'Hotel', 'phase' => 2])->name('hotels.index');
+Route::get('/places/{slug}/save', [Site\BookmarkController::class, 'prompt'])->name('places.save');
+
+Route::get('/regions', [Site\RegionController::class, 'index'])->name('regions.index');
+Route::get('/regions/{slug}', [Site\RegionController::class, 'show'])->name('regions.show');
+
+Route::get('/hotels', [Site\HotelController::class, 'index'])->name('hotels.index');
+Route::get('/hotels/{slug}', [Site\HotelController::class, 'show'])->name('hotels.show');
+
+Route::get('/collections/{slug}', [Site\CollectionController::class, 'show'])->name('collections.show');
+
+// Planner baru dibangun di Fase 4. Tautan ke sini disembunyikan selama ARCHIVE_PLANNER_ENABLED=false.
 Route::view('/planner', 'pages.pending', ['title' => 'Rencanakan perjalanan', 'phase' => 4])->name('planner.index');
 
-Route::middleware('auth')->prefix('account')->group(function () {
-    Route::view('/', 'account.index')->name('account.index');
+Route::middleware('auth')->group(function () {
+    Route::put('/places/{slug}/bookmark', [Site\BookmarkController::class, 'store'])->name('places.bookmark.store');
+    Route::delete('/places/{slug}/bookmark', [Site\BookmarkController::class, 'destroy'])->name('places.bookmark.destroy');
+
+    Route::prefix('account')->group(function () {
+        Route::view('/', 'account.index')->name('account.index');
+        Route::get('/saved-places', [Site\Account\SavedPlaceController::class, 'index'])->name('account.saved-places');
+    });
 });
 
 /*
@@ -54,6 +70,10 @@ Route::middleware(['auth', EnsureUserIsAdmin::class])->prefix('admin')->name('ad
     Route::patch('collections/{collection:id}/places/{placeId}', [Admin\CollectionPlaceController::class, 'update'])->whereNumber('placeId')->name('collections.places.update');
     Route::delete('collections/{collection:id}/places/{placeId}', [Admin\CollectionPlaceController::class, 'destroy'])->whereNumber('placeId')->name('collections.places.destroy');
 
+    Route::post('{type}/bulk-status', Admin\BulkStatusController::class)
+        ->where('type', 'places|hotels')
+        ->name('bulk-status');
+
     Route::post('{type}/{id}/status', Admin\ContentStatusController::class)
         ->where(['type' => 'places|hotels|collections', 'id' => '[0-9]+'])
         ->name('status');
@@ -63,9 +83,17 @@ Route::middleware(['auth', EnsureUserIsAdmin::class])->prefix('admin')->name('ad
     Route::put('media/{media}', [Admin\MediaController::class, 'update'])->whereNumber('media')->name('media.update');
     Route::delete('media/{media}', [Admin\MediaController::class, 'destroy'])->whereNumber('media')->name('media.destroy');
 
+    Route::get('imports', [Admin\ImportController::class, 'index'])->name('imports.index');
+    Route::get('imports/create', [Admin\ImportController::class, 'create'])->name('imports.create');
+    Route::post('imports', [Admin\ImportController::class, 'store'])->name('imports.store');
+    Route::get('imports/{batch:id}', [Admin\ImportController::class, 'show'])->name('imports.show');
+    Route::post('imports/{batch:id}/commit', [Admin\ImportController::class, 'commit'])->name('imports.commit');
+    Route::post('imports/{batch:id}/rollback', [Admin\ImportController::class, 'rollback'])->name('imports.rollback');
+
     Route::get('audit-logs', [Admin\AuditLogController::class, 'index'])->name('audit-logs.index');
 });
 
 if (app()->isLocal()) {
     Route::view('/styleguide', 'pages.styleguide')->name('styleguide');
+    Route::get('/dev/maps', Dev\MapsPlaygroundController::class)->name('dev.maps');
 }

@@ -41,7 +41,15 @@
                 <x-field name="name" label="Nama tempat" :value="$place->name" required />
                 <x-field name="slug" label="Slug URL" :value="$place->slug" :hint="$locked ? 'Dikunci karena sudah terbit.' : 'Kosongkan untuk dibuat dari nama. Tidak bisa diubah setelah terbit.'" :readonly="$locked" />
             </div>
-            <x-select name="region_id" label="Wilayah" :options="$regions->pluck('name', 'id')->all()" :selected="$place->region_id" placeholder="Pilih wilayah" required />
+            <div class="grid gap-5 sm:grid-cols-2">
+                <x-select name="region_id" label="Wilayah administratif" :options="$regions->pluck('name', 'id')->all()" :selected="$place->region_id" placeholder="Pilih wilayah" required />
+                <x-field name="area_label" label="Nama area populer" :value="$place->area_label" hint="Contoh: Ubud atau Canggu. Tampil di samping wilayah." />
+            </div>
+            <label class="flex min-h-11 items-start gap-3">
+                <input type="hidden" name="is_featured" value="0">
+                <input type="checkbox" name="is_featured" value="1" class="mt-2.5 size-5 accent-rust" @checked(old('is_featured', $place->featured_at !== null))>
+                <span class="pt-2"><span class="font-semibold">Jadikan sorotan beranda</span><span class="field-hint block">Beranda menampilkan satu tempat terbit yang paling baru disorot.</span></span>
+            </label>
             <x-checks name="category_ids" legend="Kategori" hint="Minimal satu kategori yang sudah terbit untuk bisa diterbitkan." :options="$categories->mapWithKeys(fn ($c) => [$c->id => $c->name.($c->is_published ? '' : ' (draf)')])->all()" :checked="$place->categories->modelKeys()" />
             @foreach ($tagGroups as $group => $items)
                 <x-checks name="tag_ids" :legend="'Tag '.strtolower($tagTitles[$group])" :options="$items->pluck('name', 'id')->all()" :checked="$place->tags->modelKeys()" />

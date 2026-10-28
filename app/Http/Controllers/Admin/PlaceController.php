@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\ChangeStatus;
+use App\Content\PlaceReadiness;
 use App\Actions\RecordAudit;
 use App\Actions\SaveRecord;
 use App\Enums\PublishStatus;
@@ -25,7 +26,7 @@ class PlaceController extends Controller
         $status = PublishStatus::tryFrom((string) $request->query('status'));
         $term = trim((string) $request->query('q'));
 
-        $places = Place::query()->with('region')
+        $places = Place::query()->with(['region', 'categories', 'media'])
             ->when($status, fn ($q) => $q->where('status', $status->value))
             ->when($request->integer('region'), fn ($q, $region) => $q->where('region_id', $region))
             ->when($term !== '', fn ($q) => $q->where('name', 'like', '%'.addcslashes($term, '%_\\').'%'))
@@ -33,8 +34,13 @@ class PlaceController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        $readiness = $places->getCollection()
+            ->filter(fn (Place $place) => $place->status === PublishStatus::Draft)
+            ->mapWithKeys(fn (Place $place) => [$place->id => (new PlaceReadiness)->check($place)]);
+
         return view('admin.places.index', [
             'places' => $places,
+            'readiness' => $readiness,
             'regions' => Region::query()->orderBy('name')->get(),
             'filters' => ['status' => $status?->value, 'region' => $request->integer('region') ?: null, 'q' => $term],
         ]);
@@ -55,7 +61,7 @@ class PlaceController extends Controller
             new Place,
             $request->placeData(),
             $request->user(),
-            forced: ['updated_by' => $request->user()->id],
+            forced: ['updated_by' => $request->user()->id, 'featured_at' => $request->boolean('is_featured') ? now() : null],
             forcedOnCreate: ['created_by' => $request->user()->id],
             afterSave: fn (Place $place) => $this->syncRelations($place, $request),
         );
@@ -82,7 +88,7 @@ class PlaceController extends Controller
             $place,
             $request->placeData(),
             $request->user(),
-            forced: ['updated_by' => $request->user()->id],
+            forced: ['updated_by' => $request->user()->id, 'featured_at' => $request->boolean('is_featured') ? ($place->featured_at ?? now()) : null],
             afterSave: fn (Place $place) => $this->syncRelations($place, $request),
         );
 

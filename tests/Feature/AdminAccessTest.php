@@ -10,9 +10,9 @@ use Tests\TestCase;
 
 class AdminAccessTest extends TestCase
 {
+    use WithoutViteAssets;
     use BuildsArchiveData;
     use RefreshDatabase;
-    use WithoutViteAssets;
 
     public function test_guest_is_sent_to_login(): void
     {

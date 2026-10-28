@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\ChangeStatus;
+use App\Content\HotelReadiness;
 use App\Actions\RecordAudit;
 use App\Actions\SaveRecord;
 use App\Enums\PublishStatus;
@@ -30,8 +31,13 @@ class HotelController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        $readiness = $hotels->getCollection()
+            ->filter(fn (Hotel $hotel) => $hotel->status === PublishStatus::Draft)
+            ->mapWithKeys(fn (Hotel $hotel) => [$hotel->id => (new HotelReadiness)->check($hotel)]);
+
         return view('admin.hotels.index', [
             'hotels' => $hotels,
+            'readiness' => $readiness,
             'regions' => Region::query()->orderBy('name')->get(),
             'filters' => ['status' => $status?->value, 'region' => $request->integer('region') ?: null, 'q' => $term],
         ]);

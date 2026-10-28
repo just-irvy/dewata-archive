@@ -20,7 +20,7 @@ class Hotel extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'region_id', 'name', 'slug', 'type', 'address', 'lat', 'lng', 'summary',
+        'region_id', 'area_label', 'name', 'slug', 'type', 'address', 'lat', 'lng', 'summary',
         'price_min', 'price_max', 'currency', 'price_basis', 'price_status',
         'source_url', 'verified_at',
     ];
@@ -43,6 +43,12 @@ class Hotel extends Model
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', PublishStatus::Published->value);
+    }
+
+    /** Foto utama: foto pertama yang punya alt text dan hak pakai. Relasi media harus sudah dimuat. */
+    public function heroMedia(): ?Media
+    {
+        return $this->media->first(fn (Media $media) => $media->isPublishable());
     }
 
     public function hasPrice(): bool

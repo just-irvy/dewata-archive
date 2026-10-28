@@ -28,9 +28,10 @@
                 <x-field name="slug" label="Slug URL" :value="$hotel->slug" :hint="$locked ? 'Dikunci karena sudah terbit.' : 'Kosongkan untuk dibuat dari nama.'" :readonly="$locked" />
             </div>
             <div class="grid gap-5 sm:grid-cols-2">
-                <x-select name="region_id" label="Wilayah" :options="$regions->pluck('name', 'id')->all()" :selected="$hotel->region_id" placeholder="Pilih wilayah" required />
+                <x-select name="region_id" label="Wilayah administratif" :options="$regions->pluck('name', 'id')->all()" :selected="$hotel->region_id" placeholder="Pilih wilayah" required />
                 <x-select name="type" label="Jenis akomodasi" :options="$types" :selected="$hotel->type?->value" placeholder="Pilih jenis" required />
             </div>
+            <x-field name="area_label" label="Nama area populer" :value="$hotel->area_label" hint="Contoh: Ubud atau Seminyak." />
             <x-textarea name="summary" label="Ringkasan" :value="$hotel->summary" :rows="3" hint="Maksimal 500 karakter." required />
         </fieldset>
 

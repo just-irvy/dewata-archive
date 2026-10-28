@@ -9,6 +9,7 @@
         ['admin.tags.index', 'admin.tags.*', 'Tag'],
         ['admin.collections.index', 'admin.collections.*', 'Koleksi'],
         ['admin.media.index', 'admin.media.*', 'Media'],
+        ['admin.imports.index', 'admin.imports.*', 'Impor'],
     ];
 @endphp
 <!DOCTYPE html>
