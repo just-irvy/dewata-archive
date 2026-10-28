@@ -67,6 +67,7 @@ class HomePageTest extends TestCase
 
     public function test_planner_links_are_hidden_until_the_feature_is_enabled(): void
     {
+        $this->app->setLocale('id');
         $this->get('/')->assertOk()->assertDontSee('Rencanakan perjalanan');
 
         config(['archive.features.planner' => true]);
