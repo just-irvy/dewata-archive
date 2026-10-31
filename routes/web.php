@@ -3,40 +3,71 @@
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Dev;
 use App\Http\Controllers\Site;
+use App\Http\Controllers\Site\Planner;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Route;
 
 /*
 | Rute berbentuk Route::view atau controller agar tetap bisa di-cache (php artisan route:cache).
-| Halaman bertanda "pending" adalah penampung. Controller aslinya masuk di fase
-| yang tertulis pada nilai 'phase' (lihat FILE 18).
 */
 
 Route::get('/', Site\HomeController::class)->name('home');
 Route::view('/about', 'pages.about')->name('about');
 
-Route::get('/places', [Site\PlaceController::class, 'index'])->name('places.index');
+Route::get('/places', [Site\PlaceController::class, 'index'])->middleware('throttle:search')->name('places.index');
 Route::get('/places/{slug}', [Site\PlaceController::class, 'show'])->name('places.show');
 Route::get('/places/{slug}/save', [Site\BookmarkController::class, 'prompt'])->name('places.save');
 
 Route::get('/regions', [Site\RegionController::class, 'index'])->name('regions.index');
 Route::get('/regions/{slug}', [Site\RegionController::class, 'show'])->name('regions.show');
 
-Route::get('/hotels', [Site\HotelController::class, 'index'])->name('hotels.index');
+Route::get('/hotels', [Site\HotelController::class, 'index'])->middleware('throttle:search')->name('hotels.index');
 Route::get('/hotels/{slug}', [Site\HotelController::class, 'show'])->name('hotels.show');
 
 Route::get('/collections/{slug}', [Site\CollectionController::class, 'show'])->name('collections.show');
 
-// Planner baru dibangun di Fase 4. Tautan ke sini disembunyikan selama ARCHIVE_PLANNER_ENABLED=false.
-Route::view('/planner', 'pages.pending', ['title' => 'Rencanakan perjalanan', 'phase' => 4])->name('planner.index');
+/*
+| Planner (FILE 10). Guest dan user memakai editor dan endpoint yang sama. Setiap endpoint
+| membuka rencana lewat PlanAccess: rencana milik user lewat scope pemilik dan policy,
+| draf tamu lewat token cookie. {plan} sengaja bukan route model binding.
+*/
+Route::prefix('planner')->name('planner.')->group(function () {
+    Route::get('/', [Planner\PlannerController::class, 'index'])->name('index');
+    Route::get('/recommend', [Planner\PlannerController::class, 'recommend'])->name('recommend');
+    Route::post('/recommend', [Planner\PlannerController::class, 'generate'])->middleware('throttle:planner-create')->name('generate');
+    Route::get('/manual', [Planner\PlannerController::class, 'manual'])->name('manual');
+    Route::post('/manual', [Planner\PlannerController::class, 'createManual'])->middleware('throttle:planner-create')->name('manual.store');
+
+    Route::get('/drafts/{plan}', [Planner\PlanController::class, 'show'])->whereNumber('plan')->name('drafts.show');
+
+    Route::middleware('throttle:planner-edit')->prefix('plans/{plan}')->whereNumber('plan')->name('plans.')->group(function () {
+        Route::patch('/', [Planner\PlanController::class, 'update'])->name('update');
+        Route::delete('/', [Planner\PlanController::class, 'destroy'])->name('destroy');
+        Route::post('/save', [Planner\PlanController::class, 'save'])->name('save');
+        Route::post('/hotel', [Planner\PlanController::class, 'useHotel'])->name('hotel');
+
+        Route::post('/days', [Planner\DayController::class, 'store'])->name('days.store');
+        Route::patch('/days/{day}', [Planner\DayController::class, 'update'])->whereNumber('day')->name('days.update');
+        Route::delete('/days/{day}', [Planner\DayController::class, 'destroy'])->whereNumber('day')->name('days.destroy');
+        Route::post('/days/{day}/regenerate', [Planner\DayController::class, 'regenerate'])->whereNumber('day')->name('days.regenerate');
+
+        Route::post('/items', [Planner\ItemController::class, 'store'])->name('items.store');
+        Route::patch('/items/{item}', [Planner\ItemController::class, 'update'])->whereNumber('item')->name('items.update');
+        Route::post('/items/{item}/move', [Planner\ItemController::class, 'move'])->whereNumber('item')->name('items.move');
+        Route::post('/items/{item}/replace', [Planner\ItemController::class, 'replace'])->whereNumber('item')->name('items.replace');
+        Route::delete('/items/{item}', [Planner\ItemController::class, 'destroy'])->whereNumber('item')->name('items.destroy');
+    });
+});
 
 Route::middleware('auth')->group(function () {
     Route::put('/places/{slug}/bookmark', [Site\BookmarkController::class, 'store'])->name('places.bookmark.store');
     Route::delete('/places/{slug}/bookmark', [Site\BookmarkController::class, 'destroy'])->name('places.bookmark.destroy');
 
     Route::prefix('account')->group(function () {
-        Route::view('/', 'account.index')->name('account.index');
+        Route::get('/', Site\Account\AccountController::class)->name('account.index');
         Route::get('/saved-places', [Site\Account\SavedPlaceController::class, 'index'])->name('account.saved-places');
+        Route::get('/plans', [Planner\PlanController::class, 'index'])->name('account.plans.index');
+        Route::get('/plans/{plan}', [Planner\PlanController::class, 'show'])->whereNumber('plan')->name('account.plans.show');
     });
 });
 

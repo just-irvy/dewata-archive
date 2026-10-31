@@ -64,6 +64,13 @@ export function registerMaps(Alpine) {
             await this.controller?.load();
         },
 
+        /** Planner: ganti hari tanpa membuat peta baru. Rute dihitung ulang untuk hari itu saja. */
+        async swap(patch) {
+            await this.ready;
+            if (!this.controller) return;
+            await this.controller.update({ ...this.controller.payload, ...patch });
+        },
+
         destroy() {
             if (this.controller) controllers.delete(this.controller);
         },

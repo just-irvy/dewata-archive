@@ -1,7 +1,7 @@
-@props(['markers' => [], 'route' => null, 'label' => 'Peta lokasi', 'autoload' => true, 'height' => 'h-80 sm:h-[26rem]'])
+@props(['markers' => [], 'route' => null, 'label' => 'Peta lokasi', 'autoload' => true, 'height' => 'h-80 sm:h-[26rem]', 'swappable' => false])
 
 @php
-    $enabled = \App\Support\MapMarkers::enabled() && count($markers) > 0;
+    $enabled = \App\Support\MapMarkers::enabled() && (count($markers) > 0 || $swappable);
     $first = $markers[0] ?? null;
     $payload = [
         'key' => config('archive.maps.browser_key'),
@@ -14,7 +14,7 @@
 
 {{-- Tanpa key atau tanpa marker, komponen tidak merender apa pun. Halaman tetap utuh lewat tautan dan daftar. --}}
 @if ($enabled)
-    <section aria-label="{{ $label }}" x-data="archiveMap(@js($payload))" {{ $attributes }}>
+    <section aria-label="{{ $label }}" x-data="archiveMap(@js($payload))" @if ($swappable) x-on:archive-map-swap.window="swap($event.detail)" @endif {{ $attributes }}>
         <div class="relative border border-ink/25 bg-surface">
             <div x-ref="canvas" class="{{ $height }} w-full"></div>
 
@@ -38,7 +38,7 @@
                         <p class="text-sm text-ink-soft">Daftar dan tautan di halaman ini tetap bisa dipakai.</p>
                         <div class="flex flex-wrap items-center justify-center gap-3">
                             <button type="button" class="btn btn-secondary" x-on:click="load()">Coba lagi</button>
-                            @if ($first)
+                            @if ($first && ! $swappable)
                                 <a class="btn btn-link" rel="noopener noreferrer" target="_blank" href="https://www.google.com/maps/search/?api=1&query={{ $first['lat'] }},{{ $first['lng'] }}">Buka di Google Maps</a>
                             @endif
                         </div>
@@ -47,7 +47,7 @@
             </div>
         </div>
 
-        @if ($route)
+        @if ($route || $swappable)
             <div x-show="routeState !== 'none'" x-cloak class="mt-4 text-sm">
                 <p x-show="routeState === 'loading'" role="status" class="typewriter">Menghitung rute</p>
                 <p x-show="routeState === 'error'" role="status" class="font-semibold" x-text="routeError"></p>

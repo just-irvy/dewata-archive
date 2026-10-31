@@ -14,37 +14,39 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: mbstring, pdo_sqlite, sqlite3, intl, bcmath, gd
+          extensions: mbstring, pdo_sqlite, gd, exif, intl, zip
           coverage: none
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22'
           cache: npm
 
-      - name: Install dependencies
-        run: |
-          composer install --no-interaction --prefer-dist
-          npm ci
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
 
       - name: Prepare environment
         run: |
           cp .env.example .env
           php artisan key:generate
 
-      - name: Build assets
-        run: npm run build
-
-      - name: JavaScript tests
-        run: npm run test:js
-
       - name: Code style
         run: vendor/bin/pint --test
 
-      - name: Tests
+      - name: PHP tests
         run: php artisan test
 
-      - name: Dependency audit
-        run: |
-          composer audit
-          npm audit --audit-level=high
+      - name: Dependency audit (PHP)
+        run: composer audit --no-dev
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: JS tests
+        run: npm run test:js
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Dependency audit (JS)
+        run: npm audit --omit=dev --audit-level=high

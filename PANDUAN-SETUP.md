@@ -1,8 +1,12 @@
-# The Dewata Archive: Fase 0 dan Fase 1
+# The Dewata Archive: panduan setup
+
+Bagian awal di bawah adalah catatan instalasi Fase 0 dan 1 (paket ditimpa ke instalasi Laravel baru). Repository ini sekarang sudah utuh, jadi untuk clone baru cukup ikuti README. Bagian Fase 4 dan 5 serta Produksi ada di akhir dokumen.
+
+## Fase 0 dan Fase 1 (catatan historis)
 
 Paket ini kumulatif dan berlaku di atas instalasi Laravel 13 yang baru. Fase 0 memuat skema, enum, model, policy, auth, token desain, dan layout. Fase 1 menambah ruang kerja admin, alur draf ke terbit dengan pemeriksaan kesiapan, audit log, unggah media, dan halaman tempat publik.
 
-Status verifikasi: semua file PHP lolos `php -l` (PHP 8.3), CSS terkompilasi dengan Tailwind 4.3, dan keseimbangan direktif serta tag komponen Blade sudah dicek dengan skrip. Migrasi, Blade yang dirender, dan seluruh tes belum dijalankan karena Composer tidak bisa mengakses Packagist dari lingkungan penyusun. Langkah 8 adalah verifikasi pertama Anda.
+Status verifikasi saat Fase 4 dan 5: `composer install` dari composer.lock, migrasi, 334 tes PHP, 39 tes JavaScript, `npm run build`, dan alur planner di Chromium headless (desktop 1280 px dan ponsel 360 sampai 390 px) sudah dijalankan dan lulus.
 
 ## Prasyarat
 
@@ -65,3 +69,39 @@ Rute `login`, `register`, dan `logout` berasal dari Fortify. Bila tes halaman pu
 ## Kriteria selesai Fase 1 (FILE 18)
 
 Admin dapat mengelola data lewat UI dan publik hanya melihat data terbit. Keduanya tercakup oleh tes `PlaceAdminTest`, `PublishWorkflowTest`, dan `PublicPlaceTest`. Keputusan yang menyimpang dari blueprint ada di `docs/KEPUTUSAN.md`.
+
+
+## Fase 4: planner
+
+Tidak ada langkah instalasi tambahan. Jalankan `php artisan migrate` untuk kolom `trip_plans.generation_notes`. Planner aktif bawaan (`ARCHIVE_PLANNER_ENABLED=true`).
+
+Aturan rekomendasi ada di `config/planner.php`: batas hari, tema, tempat per hari, masa simpan draf tamu, kepadatan tiap tempo, bobot skor, dan radius pengelompokan. Ubah angka di sana, bukan di kode, lalu naikkan `recommendation_version`.
+
+### Uji manual Fase 4
+
+1. Tanpa login buka `/planner`. Dua pilihan tampil setara.
+2. Dapatkan rekomendasi: isi langkah 1, lanjut ke langkah 2 tanpa memilih tema dan tekan Lanjut. Harus muncul pesan. Pilih dua tema, lanjut sampai Tinjau, tekan Ubah pada Wilayah, kembali ke Tinjau. Jawaban lain tetap ada.
+3. Susun draf. Editor menampilkan alasan per tempat, catatan penyusunan, dan tombol Simpan ke akun.
+4. Naikkan, turunkan, pindahkan ke hari lain, hapus, dan ganti dengan cadangan. Ubah catatan: tersimpan tanpa memuat ulang halaman.
+5. Susun sendiri: buat arsip 2 hari, cari "pura", tambahkan tiga tempat, seret satu ke Hari 2.
+6. Tekan Simpan ke akun, lalu daftar akun baru. Setelah daftar, arsip langsung terbuka di `/account/plans/{id}` dan sudah milik akun.
+7. Dengan peta aktif (lihat docs/PETA.md), pilih Hari 1 dan Hari 2 di panel peta. Marker berlabel D1·1, D1·2, dan H untuk penginapan. Atur penginapan di "Atur hari ini" dan pastikan rute dimulai dari H.
+8. Buka URL arsip itu dari jendela privat atau akun lain: harus 404.
+
+## Fase 5: produksi
+
+Checklist ini melengkapi FILE 20 blueprint.
+
+1. `.env` produksi: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://domain-anda`, `SESSION_SECURE_COOKIE=true`, `LOG_LEVEL=warning`. Database dengan user berprivilege minimum.
+2. `TRUSTED_PROXIES`: kosongkan bila PHP langsung menerima koneksi. Isi IP load balancer bila di belakang proxy. Tanpa ini, rate limit membaca IP proxy (semua pengguna satu kuota) atau bisa dipalsukan.
+3. Cron untuk scheduler (pembersihan draf tamu kedaluwarsa setiap hari 03.15 WITA dan token reset kata sandi):
+
+   * * * * * cd /path/ke/aplikasi && php artisan schedule:run >> /dev/null 2>&1
+
+4. Queue worker bila memakai `QUEUE_CONNECTION=database`: `php artisan queue:work --tries=3` lewat supervisor atau layanan setara.
+5. Optimasi saat deploy: `composer install --no-dev --optimize-autoloader`, `npm ci && npm run build`, `php artisan migrate --force`, `php artisan config:cache`, `php artisan route:cache`, `php artisan view:cache`.
+6. Header keamanan dikirim otomatis (X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, dan HSTS lewat HTTPS). Halaman akun dan draf dikirim dengan `Cache-Control: private, no-store`.
+7. Batas laju: pembuatan rencana 10 per menit, perubahan rencana 120 per menit, pencarian publik 90 per menit, login 5 per menit (per user bila login, per IP bila tamu). Ubah di `ArchiveServiceProvider`.
+8. Backup database dan `storage/app/public` terenkripsi, lalu uji restore sebelum rilis.
+9. Google Maps: key browser dibatasi referrer dan API, key server dibatasi IP, budget alert aktif (docs/PETA.md).
+10. Setelah deploy, uji dari browser bersih di ponsel dan desktop: daftar, planner kedua mode, simpan, peta, dan halaman admin.

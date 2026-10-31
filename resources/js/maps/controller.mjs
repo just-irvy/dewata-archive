@@ -11,6 +11,9 @@ import {
 
 const ROUTE_STYLE = { strokeColor: '#9C4935', strokeWeight: 5 };
 
+/** Titik tengah kasar Pulau Bali, dipakai bila satu hari belum punya tempat. */
+export const BALI_CENTER = { lat: -8.4095, lng: 115.1889 };
+
 /**
  * Mengendalikan satu peta: marker, info window, dan rute. Tidak bergantung pada Alpine.
  * Peta adalah utilitas. Bila apa pun gagal, halaman dan daftar tetap utuh dan pengguna
@@ -93,8 +96,8 @@ export class MapController {
 
         this.map = new GoogleMap(this.canvas, {
             mapId: this.payload.mapId,
-            center: { lat: first.lat, lng: first.lng },
-            zoom: 14,
+            center: first ? { lat: first.lat, lng: first.lng } : BALI_CENTER,
+            zoom: first ? 14 : 9,
             // Gulir halaman tidak terhenti oleh peta di layar sentuh.
             gestureHandling: 'cooperative',
             mapTypeControl: false,
@@ -134,6 +137,13 @@ export class MapController {
 
     #fit() {
         const markers = this.payload.markers ?? [];
+
+        if (markers.length === 0) {
+            this.map.setCenter(BALI_CENTER);
+            this.map.setZoom(9);
+
+            return;
+        }
 
         if (markers.length === 1) {
             this.map.setCenter({ lat: markers[0].lat, lng: markers[0].lng });
@@ -230,6 +240,8 @@ export class MapController {
         this.payload = payload;
 
         if (this.state !== 'ready') {
+            this.#set({ routeState: 'none', routeLegs: [], routeTotal: null, routeWarnings: [], routeError: null });
+
             return;
         }
 

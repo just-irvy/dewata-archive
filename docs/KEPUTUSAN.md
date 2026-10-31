@@ -223,3 +223,67 @@ Batasan jujur: deteksi templat hanya menangkap kalimat yang berulang. Ringkasan 
 Impor bersifat hanya-membuat (keputusan awal agar kerja editor tidak pernah tertimpa), tetapi itu membuat berkas yang diperbaiki tidak bisa dipakai setelah draf terlanjur ada. archive:apply-research menutup celah itu tanpa melonggarkan jaminan tadi. Hanya draf diproses, hanya kolom yang kosong diisi, isi editor tidak pernah ditimpa, dan record terbit tidak disentuh. Tanggal dan status verifikasi hanya diisi bila keduanya masih kosong. Berkas memakai pemeta impor yang sama, sehingga semua pengaman impor (templat, tautan pencarian, penurunan status "Terverifikasi") ikut berlaku.
 
 Dataset v4 memuat lima baris teriset dari sembilan kabupaten yang ada: Museum Yadnya (Badung), Penglipuran (Bangli), Jatiluwih (Tabanan), Brahmavihara-Arama (Buleleng), dan Monumen Puputan Klungkung (Klungkung). Angka yang bertentangan antarsumber (tahun berdiri, luas, tanggal) sengaja tidak dimuat dan alasannya tercatat di kolom note.
+
+# Fase 4: planner
+
+## Perbaikan lintas fase
+
+`config/app.php` masih berisi zona waktu UTC dan lokal `en`, padahal keputusan Fase 0 menetapkan WITA dan bahasa Indonesia. Karena string UI hanya ada di `lang/id`, server dengan `.env` bawaan menampilkan kunci mentah seperti `ui.nav.home`. Tes lama tidak menangkapnya karena menyetel lokal secara manual. Bawaan sekarang `Asia/Makassar` dan `id`, `.env.example` ikut diubah, dan `HardeningTest` menjaga keduanya.
+
+## Mesin rekomendasi
+
+Aturan, bukan AI, sesuai FILE 09 dan FILE 10. Kode di `app/Services/Planner`, angka di `config/planner.php`. Urutannya: tempat terbit dengan koordinat valid di wilayah terbit; filter keras wilayah, tema, dan aksesibilitas terverifikasi; skor berbobot (tema, kedekatan ke titik awal, verifikasi, sorotan, penalti luar ruang); pembagian hari per wilayah dengan urutan tetangga terdekat; pengisian hari dengan pengelompokan dan penalti kategori berulang; batas tempat dan menit per tempo; lalu pemeriksaan akhir.
+
+Hasilnya deterministik dan diuji (`RecommendationEngineTest`). Satu hari selalu satu wilayah, agar tidak ada perjalanan silang pulau dalam sehari. Jarak garis lurus dipakai hanya untuk peringkat dan tidak pernah ditampilkan.
+
+Bila tidak ada satu pun tempat yang cocok, arsip tidak dibuat dan pengguna kembali ke wizard dengan penjelasan. Bila tempat kurang, hari dibiarkan lebih tipis atau kosong dan dijelaskan di "Catatan penyusunan". Tempat tidak pernah digandakan.
+
+Kolom baru `trip_plans.generation_notes` menyimpan catatan itu, terpisah dari `planner_answers` yang hanya berisi jawaban pengguna.
+
+Pilihan "Rombongan" disimpan tetapi belum memengaruhi hasil karena dataset tidak punya metadata kecocokan rombongan. Wizard menyatakannya. "Kurangi aktivitas luar ruang" menurunkan peringkat tema pada `planner.outdoor_tags`, tidak membuang tempat.
+
+Tempo awalnya memakai anggaran menit yang membuat "Santai" tidak pernah mencapai batas 3 tempatnya (90 menit kunjungan bawaan ditambah jeda 45 menit). Anggaran diubah menjadi 6, 8,5, dan 11 jam termasuk jeda, sehingga batas tiap tempo memang tercapai.
+
+## Draf tamu
+
+Token acak 48 karakter disimpan di cookie terenkripsi HttpOnly `dewata_drafts`, bukan di sesi. Alasannya umur sesi 120 menit, sedangkan draf berumur 7 hari. Database hanya menyimpan SHA-256 token. Masa simpan diperpanjang setiap kali draf diubah. Paling banyak 5 draf per browser; yang tertua dihapus. Draf kedaluwarsa dihapus `archive:purge-guest-drafts` setiap hari.
+
+Saat login atau daftar dari browser yang sama, semua draf tamu yang valid dipindah ke akun (listener `Login`). Item yang tempatnya tidak lagi terbit dilepas dan jumlahnya diberitahukan. Draf yang dipilih lewat "Simpan ke akun" berstatus Tersimpan, sisanya Draf.
+
+`GuestDrafts` adalah singleton yang mengikat cache token ke objek request aktif. Versi awal berupa scoped binding yang menyimpan cache, dan tes menangkap draf bocor antar-request. Di PHP-FPM itu tidak terjadi, tetapi di Octane atau worker berumur panjang bisa.
+
+## Akses
+
+Semua endpoint editor membuka rencana lewat `PlanAccess`: rencana user lewat scope pemilik lalu policy, draf tamu lewat token. ID hari dan item selalu dicari dari rencana yang sudah lolos akses. Selain itu 404, bukan 403, agar keberadaan rencana orang lain tidak bisa ditebak. Admin dan super-admin tidak punya akses ke rencana pengguna (diuji).
+
+URL kanonis: `/planner/drafts/{id}` untuk draf tamu, `/account/plans/{id}` untuk rencana akun. Pengguna yang login dan membuat rencana langsung mendapat rencana milik akun berstatus Draf.
+
+## Editor dan peta
+
+Mode Rekomendasi dan Manual memakai tabel, editor, dan peta yang sama. `item_source` hanya provenance. Tempat ganda dalam satu arsip ditolak. Satu hari paling banyak 10 tempat, sama dengan batas intermediate waypoint di bawah ambang tarif tinggi Google.
+
+Catatan, durasi, dan jam mulai disimpan lewat fetch tanpa memuat ulang halaman, sehingga peta tidak menghitung ulang rute (FILE 10). Naik, turun, pindah hari, ganti, dan seret-lepas memuat ulang halaman karena mengubah geografi.
+
+Peta menampilkan satu hari, dengan pemilih hari yang menukar marker dan rute tanpa membuat peta baru. Origin rute adalah penginapan hari itu bila diatur. Tanpa penginapan, tempat pertama menjadi origin. Transportasi umum tidak dirutekan.
+
+Snapshot jarak per leg (`route_*`) dikosongkan setiap kali urutan, hotel, atau moda berubah. Snapshot belum diisi dari browser; jarak dan waktu dihitung saat peta dibuka. Bila nanti dibutuhkan untuk chatbot, isi lewat adapter server.
+
+"Susun ulang hari ini" mengganti seluruh isi hari, termasuk tempat yang ditambahkan manual. Konfirmasi menyatakannya.
+
+## Ekspor
+
+Sesuai keputusan terbuka FILE 21: halaman ramah cetak (`window.print`, kontrol edit disembunyikan) dan Salin ringkasan dalam teks biasa. PDF khusus tidak dibuat.
+
+# Fase 5: hardening
+
+Header keamanan lewat middleware `SecurityHeaders`. Content-Security-Policy belum dipasang: Alpine standar memakai `new Function` sehingga butuh `'unsafe-eval'`, dan Google Maps butuh beberapa domain. CSP dengan `'unsafe-eval'` memberi rasa aman palsu. Bila CSP diwajibkan, ganti ke build `@alpinejs/csp` (sintaks ekspresi lebih terbatas) lalu pasang kebijakan yang mengizinkan `maps.googleapis.com`, `maps.gstatic.com`, dan `*.googleapis.com`.
+
+Proxy tepercaya lewat `TRUSTED_PROXIES`, bawaan kosong. Rate limit untuk pencarian publik, pembuatan rencana, dan perubahan rencana. CI GitHub Actions menjalankan Pint, tes PHP dan JS, build, serta audit dependensi.
+
+## Belum dikerjakan
+
+Thumbnail foto: kartu masih memakai foto yang sudah diperkecil ke 2000 piksel. Untuk katalog besar, buat varian 800 piksel saat unggah. Content-Security-Policy (lihat di atas). Sitemap XML dan Open Graph tidak ada di blueprint.
+
+## Yang belum bisa saya pastikan
+
+Peta dengan key sungguhan. Tes JS memakai objek Google tiruan, termasuk pergantian hari. Uji dengan key Anda sesuai docs/PETA.md. Seret-lepas diuji lewat fungsi posisinya dan alur form, tetapi tidak dengan gestur seret di browser.

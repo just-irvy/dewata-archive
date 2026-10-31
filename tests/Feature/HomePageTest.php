@@ -65,9 +65,9 @@ class HomePageTest extends TestCase
             ->assertDontSee('Penginapan Draf');
     }
 
-    public function test_planner_links_are_hidden_until_the_feature_is_enabled(): void
+    public function test_planner_links_are_hidden_when_the_feature_is_disabled(): void
     {
-        $this->app->setLocale('id');
+        config(['archive.features.planner' => false]);
         $this->get('/')->assertOk()->assertDontSee('Rencanakan perjalanan');
 
         config(['archive.features.planner' => true]);

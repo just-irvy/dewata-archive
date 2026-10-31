@@ -289,3 +289,37 @@ test('update: marker diganti dan rute hilang saat payload tanpa rute', async () 
     assert.equal(controller.routeState, 'none');
     assert.equal(polyline.map, null);
 });
+
+test('a day without markers centres on Bali instead of crashing', async () => {
+    const { controller } = build({ payload: { markers: [] } });
+    await controller.load();
+
+    assert.equal(controller.state, 'ready');
+    assert.equal(controller.map.zoom, 9);
+    assert.deepEqual(controller.map.center, { lat: -8.4095, lng: 115.1889 });
+});
+
+test('update before the map is ready keeps the new payload and resets route state', async () => {
+    const { controller, patches } = build();
+    await controller.update({ mapId: 'MAP123', markers: markers.slice(1), route: null });
+
+    assert.equal(controller.state, 'idle');
+    assert.equal(controller.payload.markers.length, 2);
+    assert.equal(patches.at(-1).routeState, 'none');
+});
+
+test('switching to a day with a route draws it after the map is ready', async () => {
+    const { controller, calls } = build();
+    await controller.load();
+    assert.equal(calls.computeRoutes, 0);
+
+    await controller.update({
+        mapId: 'MAP123',
+        markers,
+        route: { origin: markers[0], stops: [markers[1], markers[2]], mode: 'DRIVING' },
+    });
+
+    assert.equal(calls.computeRoutes, 1);
+    assert.equal(controller.routeState, 'ready');
+    assert.equal(calls.request.intermediates.length, 1);
+});

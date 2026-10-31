@@ -1,8 +1,7 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+// Jalankan `php artisan schedule:run` tiap menit lewat cron di server (lihat PANDUAN-SETUP.md).
+Schedule::command('archive:purge-guest-drafts')->dailyAt('03:15');
+Schedule::command('auth:clear-resets')->daily();

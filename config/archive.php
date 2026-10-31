@@ -32,12 +32,25 @@ return [
     ],
 
     /*
-    | Fitur yang dibuka bertahap. Planner baru ada di Fase 4, jadi tautan menuju
-    | planner tidak ditampilkan sebelum itu.
+    | Fitur yang dibuka bertahap. Planner aktif sejak Fase 4. Matikan untuk menyembunyikan
+    | semua tautan ke planner (rute tetap ada).
     */
     'features' => [
-        'planner' => (bool) env('ARCHIVE_PLANNER_ENABLED', false),
+        'planner' => (bool) env('ARCHIVE_PLANNER_ENABLED', true),
     ],
+
+    /*
+    | Proxy tepercaya (FILE 20). Kosong berarti tidak ada proxy: IP klien diambil langsung,
+    | sehingga header X-Forwarded-For dari luar tidak bisa memalsukan IP untuk rate limit.
+    | Isi IP load balancer (pisahkan koma) atau * bila platform hosting menjaminnya.
+    */
+    'trusted_proxies' => ($proxies = env('TRUSTED_PROXIES')) === '*' ? '*' : array_values(array_filter(array_map('trim', explode(',', (string) $proxies)))),
+
+    /*
+    | Header keamanan (FILE 15). HSTS hanya dikirim lewat HTTPS. CSP belum dipasang karena
+    | Alpine versi standar memerlukan 'unsafe-eval'; lihat docs/KEPUTUSAN.md bagian Fase 5.
+    */
+    'security_headers' => (bool) env('ARCHIVE_SECURITY_HEADERS', true),
 
     'per_page' => 12,
 

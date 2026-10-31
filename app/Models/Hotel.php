@@ -51,6 +51,11 @@ class Hotel extends Model
         return $this->media->first(fn (Media $media) => $media->isPublishable());
     }
 
+    public function isPublished(): bool
+    {
+        return $this->status === PublishStatus::Published;
+    }
+
     public function hasPrice(): bool
     {
         return $this->price_min !== null || $this->price_max !== null;

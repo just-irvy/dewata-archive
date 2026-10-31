@@ -220,3 +220,15 @@
         color: var(--color-oxblood);
     }
 }
+
+/*
+| Cetak (open decision FILE 21: halaman ramah cetak sebagai ekspor itinerary).
+| Kontrol edit memakai kelas print:hidden. Di sini hanya kerangka halaman.
+*/
+@media print {
+    html { background: #fff; }
+    header nav, #menu-mobile, footer, [href="#konten-utama"] { display: none !important; }
+    main { max-width: none !important; padding: 0 !important; }
+    a { text-decoration: none; color: inherit; }
+    section { break-inside: avoid-page; }
+}

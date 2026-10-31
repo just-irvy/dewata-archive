@@ -3,6 +3,7 @@ import './bootstrap';
 import Alpine from 'alpinejs';
 
 import { registerMaps } from './maps/index.mjs';
+import { registerPlanner } from './planner/index.mjs';
 
 // Hanya bobot yang dipakai. Lisensi ketiga font: SIL OFL 1.1 (lihat docs/KEPUTUSAN.md).
 import '@fontsource-variable/playfair-display';
@@ -11,6 +12,7 @@ import '@fontsource-variable/inter';
 import '@fontsource/courier-prime/400.css';
 
 registerMaps(Alpine);
+registerPlanner(Alpine);
 
 window.Alpine = Alpine;
 Alpine.start();
