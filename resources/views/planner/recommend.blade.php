@@ -1,43 +1,43 @@
 @php
-$source = session()->hasOldInput() ? session()->getOldInput() : $prefill;
-$strs = fn ($v) => array_values(array_map('strval', array_filter((array) $v, fn ($x) => $x !== null && $x !== '')));
-$values = [
-'days_count' => (string) ($source['days_count'] ?? 3),
-'start_date' => (string) ($source['start_date'] ?? ''),
-'origin_region_id' => (string) ($source['origin_region_id'] ?? ''),
-'party' => (string) ($source['party'] ?? ''),
-'themes' => $strs($source['themes'] ?? []),
-'surprise' => (bool) ($source['surprise'] ?? false),
-'region_ids' => $strs($source['region_ids'] ?? []),
-'flexibility' => (string) ($source['flexibility'] ?? 'nearby'),
-'pace' => (string) ($source['pace'] ?? 'balanced'),
-'mobility' => $strs($source['mobility'] ?? []),
-'transport_mode' => (string) ($source['transport_mode'] ?? 'undecided'),
-'daily_time' => (string) ($source['daily_time'] ?? 'flexible'),
-'avoid_outdoor' => (bool) ($source['avoid_outdoor'] ?? false),
-'want_hotel' => (bool) ($source['want_hotel'] ?? false),
-'stay_region_ids' => $strs($source['stay_region_ids'] ?? []),
-'price_min' => (string) ($source['price_min'] ?? ''),
-'price_max' => (string) ($source['price_max'] ?? ''),
-'hotel_types' => $strs($source['hotel_types'] ?? []),
-'guests' => (string) ($source['guests'] ?? ''),
-'rooms' => (string) ($source['rooms'] ?? ''),
-'title' => (string) ($source['title'] ?? ''),
-];
-$allRegions = $regions->pluck('name', 'id')->union($hotelRegions->pluck('name', 'id'))->mapWithKeys(fn ($n, $id) => [(string) $id => $n])->all();
-$labels = [
-'regions' => $allRegions,
-'themes' => $themes->pluck('name', 'slug')->all(),
-'party' => config('planner.labels.party'),
-'flexibility' => config('planner.labels.flexibility'),
-'dailyTime' => config('planner.labels.daily_time'),
-'pace' => collect($paces)->mapWithKeys(fn ($p) => [$p->value => 'tempo '.mb_strtolower($p->label())])->all(),
-'transport' => collect($transports)->mapWithKeys(fn ($t) => [$t->value => $t->label()])->all(),
-'access' => $access,
-'hotelTypes' => $hotelTypes,
-];
-$limits = ['maxDays' => config('planner.max_days'), 'maxThemes' => config('planner.max_themes')];
-$groups = [1 => 'Kerangka perjalanan', 2 => 'Minat', 3 => 'Wilayah', 4 => 'Tempo dan batasan', 5 => 'Penginapan'];
+    $source = session()->hasOldInput() ? session()->getOldInput() : $prefill;
+    $strs = fn ($v) => array_values(array_map('strval', array_filter((array) $v, fn ($x) => $x !== null && $x !== '')));
+    $values = [
+        'days_count' => (string) ($source['days_count'] ?? 3),
+        'start_date' => (string) ($source['start_date'] ?? ''),
+        'origin_region_id' => (string) ($source['origin_region_id'] ?? ''),
+        'party' => (string) ($source['party'] ?? ''),
+        'themes' => $strs($source['themes'] ?? []),
+        'surprise' => (bool) ($source['surprise'] ?? false),
+        'region_ids' => $strs($source['region_ids'] ?? []),
+        'flexibility' => (string) ($source['flexibility'] ?? 'nearby'),
+        'pace' => (string) ($source['pace'] ?? 'balanced'),
+        'mobility' => $strs($source['mobility'] ?? []),
+        'transport_mode' => (string) ($source['transport_mode'] ?? 'undecided'),
+        'daily_time' => (string) ($source['daily_time'] ?? 'flexible'),
+        'avoid_outdoor' => (bool) ($source['avoid_outdoor'] ?? false),
+        'want_hotel' => (bool) ($source['want_hotel'] ?? false),
+        'stay_region_ids' => $strs($source['stay_region_ids'] ?? []),
+        'price_min' => (string) ($source['price_min'] ?? ''),
+        'price_max' => (string) ($source['price_max'] ?? ''),
+        'hotel_types' => $strs($source['hotel_types'] ?? []),
+        'guests' => (string) ($source['guests'] ?? ''),
+        'rooms' => (string) ($source['rooms'] ?? ''),
+        'title' => (string) ($source['title'] ?? ''),
+    ];
+    $allRegions = $regions->pluck('name', 'id')->union($hotelRegions->pluck('name', 'id'))->mapWithKeys(fn ($n, $id) => [(string) $id => $n])->all();
+    $labels = [
+        'regions' => $allRegions,
+        'themes' => $themes->pluck('name', 'slug')->all(),
+        'party' => config('planner.labels.party'),
+        'flexibility' => config('planner.labels.flexibility'),
+        'dailyTime' => config('planner.labels.daily_time'),
+        'pace' => collect($paces)->mapWithKeys(fn ($p) => [$p->value => 'tempo '.mb_strtolower($p->label())])->all(),
+        'transport' => collect($transports)->mapWithKeys(fn ($t) => [$t->value => $t->label()])->all(),
+        'access' => $access,
+        'hotelTypes' => $hotelTypes,
+    ];
+    $limits = ['maxDays' => config('planner.max_days'), 'maxThemes' => config('planner.max_themes')];
+    $groups = [1 => 'Kerangka perjalanan', 2 => 'Minat', 3 => 'Wilayah', 4 => 'Tempo dan batasan', 5 => 'Penginapan'];
 @endphp
 
 <x-layouts.app title="Dapatkan rekomendasi">
@@ -51,7 +51,8 @@ $groups = [1 => 'Kerangka perjalanan', 2 => 'Minat', 3 => 'Wilayah', 4 => 'Tempo
         class="mt-10 grid gap-10 lg:grid-cols-12"
         x-data="plannerWizard(@js(['initialStep' => $initialStep, 'values' => $values, 'labels' => $labels, 'limits' => $limits]))"
         x-on:submit="submit($event)"
-        novalidate>
+        novalidate
+    >
         @csrf
 
         {{-- Penanda kemajuan. Langkah yang sudah lewat bisa dibuka lagi. --}}
@@ -66,7 +67,8 @@ $groups = [1 => 'Kerangka perjalanan', 2 => 'Minat', 3 => 'Wilayah', 4 => 'Tempo
                             x-bind:class="item.n === step ? 'border-rust font-semibold text-ink' : (item.n < step ? 'border-transparent text-ink hover:text-rust' : 'border-transparent text-ink-soft')"
                             x-bind:aria-current="item.n === step ? 'step' : null"
                             x-bind:disabled="item.n > step"
-                            x-on:click="go(item.n)">
+                            x-on:click="go(item.n)"
+                        >
                             <span class="typewriter w-4 text-ink-soft" x-text="item.n"></span>
                             <span x-text="item.title"></span>
                         </button>
@@ -77,20 +79,18 @@ $groups = [1 => 'Kerangka perjalanan', 2 => 'Minat', 3 => 'Wilayah', 4 => 'Tempo
 
         <div class="lg:col-span-9 lg:max-w-2xl">
             @if ($errors->any())
-            <div role="alert" class="mb-8 border-l-4 border-oxblood bg-surface px-4 py-3">
-                <p class="font-semibold text-oxblood">Periksa kembali jawaban berikut.</p>
-                <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
-                    @foreach ($errors->all() as $message)
-                    <li>{{ $message }}</li>
-                    @endforeach
-                </ul>
-            </div>
+                <div role="alert" class="mb-8 border-l-4 border-oxblood bg-surface px-4 py-3">
+                    <p class="font-semibold text-oxblood">Periksa kembali jawaban berikut.</p>
+                    <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
+                        @foreach ($errors->all() as $message)
+                            <li>{{ $message }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             @endif
 
             <div x-show="errors.length > 0" x-cloak x-ref="errors" tabindex="-1" role="alert" class="mb-8 border-l-4 border-oxblood bg-surface px-4 py-3 outline-none">
-                <template x-for="(message, i) in errors" x-bind:key="i">
-                    <p class="text-sm font-semibold text-oxblood" x-text="message"></p>
-                </template>
+                <template x-for="(message, i) in errors" x-bind:key="i"><p class="text-sm font-semibold text-oxblood" x-text="message"></p></template>
             </div>
 
             {{-- Langkah 1 --}}
@@ -98,7 +98,7 @@ $groups = [1 => 'Kerangka perjalanan', 2 => 'Minat', 3 => 'Wilayah', 4 => 'Tempo
                 <h2 id="langkah-1" x-ref="step1" tabindex="-1" class="text-3xl outline-none">Kerangka perjalanan</h2>
                 <x-field name="days_count" label="Jumlah hari" type="number" :required="true" min="1" :max="config('planner.max_days')" inputmode="numeric" x-model="values.days_count" :value="$values['days_count']" :hint="'Antara 1 dan '.config('planner.max_days').' hari. Bisa diubah setelah draf dibuat.'" />
                 <x-field name="start_date" label="Tanggal mulai" type="date" :min="now()->toDateString()" x-model="values.start_date" :value="$values['start_date']" hint="Tanpa tanggal, itinerary memakai Hari 1, Hari 2, dan seterusnya. Jam buka tidak dikarang." />
-                <x-select name="origin_region_id" label="Titik awal atau area menginap" :options="$hotelRegions->pluck('name', 'id')->all()" :selected="$values['origin_region_id']" placeholder="Belum tahu" x-model="values.origin_region_id" hint="Dipakai agar rute tidak bolak-balik. Bukan anggaran." />
+                <x-select name="origin_region_id" label="Titik awal atau area menginap" :options="$regions->pluck('name', 'id')->all()" :selected="$values['origin_region_id']" placeholder="Belum tahu" x-model="values.origin_region_id" hint="Dipakai agar rute tidak bolak-balik. Bukan anggaran." />
                 <x-select name="party" label="Rombongan" :options="config('planner.labels.party')" :selected="$values['party']" placeholder="Tidak disebutkan" x-model="values.party" hint="Hanya dipakai bila data tempat mendukung. Saat ini belum memengaruhi hasil." />
             </section>
 
@@ -110,17 +110,17 @@ $groups = [1 => 'Kerangka perjalanan', 2 => 'Minat', 3 => 'Wilayah', 4 => 'Tempo
                     <p class="field-hint">Hanya tema yang punya tempat terbit di arsip yang ditampilkan.</p>
                     <div class="mt-2 grid gap-x-8 sm:grid-cols-2">
                         @forelse ($themes as $theme)
-                        <label class="flex min-h-11 items-start gap-3 py-1.5">
-                            <input type="checkbox" name="themes[]" value="{{ $theme->slug }}" class="mt-1 size-5 shrink-0 accent-rust" x-model="values.themes" @checked(in_array($theme->slug, $values['themes'], true))>
-                            <span>
-                                <span class="font-semibold">{{ $theme->name }}</span>
-                                @if ($theme->description)
-                                <span class="block text-sm text-ink-soft">{{ $theme->description }}</span>
-                                @endif
-                            </span>
-                        </label>
+                            <label class="flex min-h-11 items-start gap-3 py-1.5">
+                                <input type="checkbox" name="themes[]" value="{{ $theme->slug }}" class="mt-1 size-5 shrink-0 accent-rust" x-model="values.themes" @checked(in_array($theme->slug, $values['themes'], true))>
+                                <span>
+                                    <span class="font-semibold">{{ $theme->name }}</span>
+                                    @if ($theme->description)
+                                        <span class="block text-sm text-ink-soft">{{ $theme->description }}</span>
+                                    @endif
+                                </span>
+                            </label>
                         @empty
-                        <p class="text-sm text-ink-soft">Belum ada tema dengan tempat terbit. Pilih "Kejutkan saya".</p>
+                            <p class="text-sm text-ink-soft">Belum ada tema dengan tempat terbit. Pilih "Kejutkan saya".</p>
                         @endforelse
                     </div>
                 </fieldset>
@@ -139,20 +139,20 @@ $groups = [1 => 'Kerangka perjalanan', 2 => 'Minat', 3 => 'Wilayah', 4 => 'Tempo
                     <p class="field-hint">Batas kabupaten dan kota. Kosongkan untuk seluruh Bali. Lebih banyak wilayah berarti lebih banyak waktu di jalan.</p>
                     <div class="mt-2 grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ($regions as $region)
-                        <label class="flex min-h-11 items-center gap-3">
-                            <input type="checkbox" name="region_ids[]" value="{{ $region->id }}" class="size-5 accent-rust" x-model="values.region_ids" @checked(in_array((string) $region->id, $values['region_ids'], true))>
-                            <span>{{ $region->name }} <span class="typewriter">{{ $region->places_count }} tempat</span></span>
-                        </label>
+                            <label class="flex min-h-11 items-center gap-3">
+                                <input type="checkbox" name="region_ids[]" value="{{ $region->id }}" class="size-5 accent-rust" x-model="values.region_ids" @checked(in_array((string) $region->id, $values['region_ids'], true))>
+                                <span>{{ $region->name }} <span class="typewriter">{{ $region->places_count }} tempat</span></span>
+                            </label>
                         @endforeach
                     </div>
                 </fieldset>
                 <fieldset class="field">
                     <legend class="field-label">Seberapa jauh dalam satu hari</legend>
                     @foreach (config('planner.labels.flexibility') as $value => $label)
-                    <label class="flex min-h-11 items-center gap-3">
-                        <input type="radio" name="flexibility" value="{{ $value }}" class="size-5 accent-rust" x-model="values.flexibility" @checked($values['flexibility']===$value)>
-                        <span>{{ $label }}</span>
-                    </label>
+                        <label class="flex min-h-11 items-center gap-3">
+                            <input type="radio" name="flexibility" value="{{ $value }}" class="size-5 accent-rust" x-model="values.flexibility" @checked($values['flexibility'] === $value)>
+                            <span>{{ $label }}</span>
+                        </label>
                     @endforeach
                 </fieldset>
             </section>
@@ -163,34 +163,34 @@ $groups = [1 => 'Kerangka perjalanan', 2 => 'Minat', 3 => 'Wilayah', 4 => 'Tempo
                 <fieldset class="field">
                     <legend class="field-label">Tempo</legend>
                     @foreach ($paces as $pace)
-                    <label class="flex min-h-11 items-start gap-3 py-1">
-                        <input type="radio" name="pace" value="{{ $pace->value }}" class="mt-1 size-5 shrink-0 accent-rust" x-model="values.pace" @checked($values['pace']===$pace->value)>
-                        <span><span class="font-semibold">{{ $pace->label() }}</span> <span class="text-sm text-ink-soft">{{ $pace->hint() }}</span></span>
-                    </label>
+                        <label class="flex min-h-11 items-start gap-3 py-1">
+                            <input type="radio" name="pace" value="{{ $pace->value }}" class="mt-1 size-5 shrink-0 accent-rust" x-model="values.pace" @checked($values['pace'] === $pace->value)>
+                            <span><span class="font-semibold">{{ $pace->label() }}</span> <span class="text-sm text-ink-soft">{{ $pace->hint() }}</span></span>
+                        </label>
                     @endforeach
                 </fieldset>
                 <x-select name="transport_mode" label="Transportasi" :required="true" :options="$labels['transport']" :selected="$values['transport_mode']" x-model="values.transport_mode" hint="Menentukan moda rute di peta. Transportasi umum tidak dirutekan." />
                 <fieldset class="field">
                     <legend class="field-label">Waktu harian</legend>
                     @foreach (config('planner.labels.daily_time') as $value => $label)
-                    <label class="flex min-h-11 items-center gap-3">
-                        <input type="radio" name="daily_time" value="{{ $value }}" class="size-5 accent-rust" x-model="values.daily_time" @checked($values['daily_time']===$value)>
-                        <span>{{ $label }}</span>
-                    </label>
+                        <label class="flex min-h-11 items-center gap-3">
+                            <input type="radio" name="daily_time" value="{{ $value }}" class="size-5 accent-rust" x-model="values.daily_time" @checked($values['daily_time'] === $value)>
+                            <span>{{ $label }}</span>
+                        </label>
                     @endforeach
                     <p class="field-hint">Mengatur kepadatan hari. Bukan pengganti jam buka terkini.</p>
                 </fieldset>
                 @if ($access !== [])
-                <fieldset class="field">
-                    <legend class="field-label">Kebutuhan mobilitas <span class="field-optional">(opsional)</span></legend>
-                    <p class="field-hint">Hanya tempat dengan data aksesibilitas terverifikasi yang dipilih bila opsi ini dicentang.</p>
-                    @foreach ($access as $key => $label)
-                    <label class="flex min-h-11 items-center gap-3">
-                        <input type="checkbox" name="mobility[]" value="{{ $key }}" class="size-5 accent-rust" x-model="values.mobility" @checked(in_array($key, $values['mobility'], true))>
-                        <span>{{ $label }}</span>
-                    </label>
-                    @endforeach
-                </fieldset>
+                    <fieldset class="field">
+                        <legend class="field-label">Kebutuhan mobilitas <span class="field-optional">(opsional)</span></legend>
+                        <p class="field-hint">Hanya tempat dengan data aksesibilitas terverifikasi yang dipilih bila opsi ini dicentang.</p>
+                        @foreach ($access as $key => $label)
+                            <label class="flex min-h-11 items-center gap-3">
+                                <input type="checkbox" name="mobility[]" value="{{ $key }}" class="size-5 accent-rust" x-model="values.mobility" @checked(in_array($key, $values['mobility'], true))>
+                                <span>{{ $label }}</span>
+                            </label>
+                        @endforeach
+                    </fieldset>
                 @endif
                 <label class="flex min-h-11 items-start gap-3">
                     <input type="hidden" name="avoid_outdoor" value="0">
@@ -211,35 +211,35 @@ $groups = [1 => 'Kerangka perjalanan', 2 => 'Minat', 3 => 'Wilayah', 4 => 'Tempo
 
                 <div x-show="values.want_hotel" class="space-y-6 border-l-2 border-brass/60 pl-5">
                     @if ($hotelRegions->isNotEmpty())
-                    <fieldset class="field">
-                        <legend class="field-label">Wilayah menginap <span class="field-optional">(opsional)</span></legend>
-                        <p class="field-hint">Kosongkan agar mengikuti wilayah itinerary.</p>
-                        <div class="mt-1 grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
-                            @foreach ($hotelRegions as $region)
-                            <label class="flex min-h-11 items-center gap-3">
-                                <input type="checkbox" name="stay_region_ids[]" value="{{ $region->id }}" class="size-5 accent-rust" x-model="values.stay_region_ids" @checked(in_array((string) $region->id, $values['stay_region_ids'], true))>
-                                <span>{{ $region->name }}</span>
-                            </label>
-                            @endforeach
-                        </div>
-                    </fieldset>
+                        <fieldset class="field">
+                            <legend class="field-label">Wilayah menginap <span class="field-optional">(opsional)</span></legend>
+                            <p class="field-hint">Kosongkan agar mengikuti wilayah itinerary.</p>
+                            <div class="mt-1 grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
+                                @foreach ($hotelRegions as $region)
+                                    <label class="flex min-h-11 items-center gap-3">
+                                        <input type="checkbox" name="stay_region_ids[]" value="{{ $region->id }}" class="size-5 accent-rust" x-model="values.stay_region_ids" @checked(in_array((string) $region->id, $values['stay_region_ids'], true))>
+                                        <span>{{ $region->name }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </fieldset>
                     @endif
                     <div class="grid gap-6 sm:grid-cols-2">
                         <x-field name="price_min" label="Harga minimal per malam (Rp)" type="number" min="0" step="50000" inputmode="numeric" x-model="values.price_min" :value="$values['price_min']" />
                         <x-field name="price_max" label="Harga maksimal per malam (Rp)" type="number" min="0" step="50000" inputmode="numeric" x-model="values.price_max" :value="$values['price_max']" />
                     </div>
                     @if ($hotelTypes !== [])
-                    <fieldset class="field">
-                        <legend class="field-label">Jenis penginapan <span class="field-optional">(opsional)</span></legend>
-                        <div class="mt-1 grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
-                            @foreach ($hotelTypes as $value => $label)
-                            <label class="flex min-h-11 items-center gap-3">
-                                <input type="checkbox" name="hotel_types[]" value="{{ $value }}" class="size-5 accent-rust" x-model="values.hotel_types" @checked(in_array($value, $values['hotel_types'], true))>
-                                <span>{{ $label }}</span>
-                            </label>
-                            @endforeach
-                        </div>
-                    </fieldset>
+                        <fieldset class="field">
+                            <legend class="field-label">Jenis penginapan <span class="field-optional">(opsional)</span></legend>
+                            <div class="mt-1 grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
+                                @foreach ($hotelTypes as $value => $label)
+                                    <label class="flex min-h-11 items-center gap-3">
+                                        <input type="checkbox" name="hotel_types[]" value="{{ $value }}" class="size-5 accent-rust" x-model="values.hotel_types" @checked(in_array($value, $values['hotel_types'], true))>
+                                        <span>{{ $label }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </fieldset>
                     @endif
                     <div class="grid gap-6 sm:grid-cols-2">
                         <x-field name="guests" label="Jumlah tamu" type="number" min="1" max="30" inputmode="numeric" x-model="values.guests" :value="$values['guests']" />
@@ -255,22 +255,20 @@ $groups = [1 => 'Kerangka perjalanan', 2 => 'Minat', 3 => 'Wilayah', 4 => 'Tempo
 
                 <dl class="divide-y divide-ink/15 border-y-2 border-ink" x-cloak>
                     @foreach ($groups as $n => $name)
-                    <div class="flex flex-wrap items-start justify-between gap-x-6 gap-y-1 py-4">
-                        <div class="min-w-0 flex-1">
-                            <dt class="font-semibold">{{ $name }}</dt>
-                            <dd class="mt-1 text-ink-soft" x-text="summary({{ $n }})"></dd>
+                        <div class="flex flex-wrap items-start justify-between gap-x-6 gap-y-1 py-4">
+                            <div class="min-w-0 flex-1">
+                                <dt class="font-semibold">{{ $name }}</dt>
+                                <dd class="mt-1 text-ink-soft" x-text="summary({{ $n }})"></dd>
+                            </div>
+                            <button type="button" class="btn btn-link" x-on:click="go({{ $n }})">Ubah <span class="sr-only">{{ mb_strtolower($name) }}</span></button>
                         </div>
-                        <button type="button" class="btn btn-link" x-on:click="go({{ $n }})">Ubah <span class="sr-only">{{ mb_strtolower($name) }}</span></button>
-                    </div>
                     @endforeach
                 </dl>
 
                 <div x-show="conflicts.length > 0" x-cloak class="border-l-4 border-brass bg-surface px-4 py-3">
                     <p class="font-semibold">Perhatikan sebelum menyusun</p>
                     <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
-                        <template x-for="(warning, i) in conflicts" x-bind:key="i">
-                            <li x-text="warning"></li>
-                        </template>
+                        <template x-for="(warning, i) in conflicts" x-bind:key="i"><li x-text="warning"></li></template>
                     </ul>
                     <p class="mt-2 text-sm text-ink-soft">Anda boleh melanjutkan, atau ubah pilihan di atas.</p>
                 </div>

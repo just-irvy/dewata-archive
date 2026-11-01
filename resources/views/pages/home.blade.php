@@ -1,7 +1,7 @@
 @php($heroImage = $featured?->heroMedia())
 
 <x-layouts.app :description="__('ui.home.description')">
-    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+    <div class="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
         <section class="lg:col-span-7">
             <h1 class="text-4xl sm:text-5xl lg:text-6xl">{{ __('ui.home.title') }}</h1>
             <p class="mt-6 max-w-[56ch] text-lg leading-relaxed text-ink-soft">{{ __('ui.home.lead') }}</p>
@@ -14,26 +14,50 @@
             </div>
         </section>
 
-        @if ($featured)
-            <section aria-labelledby="sorotan" class="lg:col-span-5">
-                <h2 id="sorotan" class="sr-only">Tempat sorotan</h2>
+        {{-- Foto sampul Pulau Bali (Admin, Beranda). Tanpa foto lengkap: lembar peta Bali. --}}
+        <div class="lg:col-span-5">
+            @if ($cover)
                 <figure>
-                    @if ($heroImage)
+                    <img src="{{ $cover['url'] }}" alt="{{ $cover['alt_text'] }}" @if ($cover['width'] ?? null) width="{{ $cover['width'] }}" height="{{ $cover['height'] }}" @endif class="aspect-[4/3] w-full object-cover sm:aspect-[16/10] lg:aspect-[4/5]" fetchpriority="high">
+                    <figcaption class="typewriter mt-2 flex flex-wrap justify-between gap-x-4 gap-y-1">
+                        @if ($cover['caption'] ?? null)<span>{{ $cover['caption'] }}</span>@endif
+                        <span>Foto: {{ collect([$cover['credit'] ?? null, $cover['license_note'] ?? null])->filter()->join(', ') }}</span>
+                    </figcaption>
+                </figure>
+            @else
+                <x-bali-plate :points="$mapPoints" :total="$placeTotal" />
+                @can('manage-site')
+                    <p class="mt-2 text-sm"><a class="btn btn-link px-0" href="{{ route('admin.home.edit') }}">Pasang foto sampul Pulau Bali</a></p>
+                @endcan
+            @endif
+        </div>
+    </div>
+
+    @if ($featured)
+        <section aria-labelledby="sorotan" class="mt-20 grid gap-8 border-t-[3px] border-double border-ink pt-8 lg:grid-cols-12">
+            <div @class(['lg:col-span-7' => $heroImage, 'hidden' => ! $heroImage])>
+                @if ($heroImage)
+                    <figure>
                         <a href="{{ route('places.show', $featured->slug) }}" tabindex="-1" aria-hidden="true">
-                            <img src="{{ $heroImage->url() }}" alt="" @if ($heroImage->width) width="{{ $heroImage->width }}" height="{{ $heroImage->height }}" @endif class="aspect-[4/5] w-full object-cover" fetchpriority="high">
+                            <img src="{{ $heroImage->url() }}" alt="" @if ($heroImage->width) width="{{ $heroImage->width }}" height="{{ $heroImage->height }}" @endif class="aspect-[3/2] w-full object-cover" loading="lazy">
                         </a>
                         @if ($heroImage->credit)
                             <figcaption class="typewriter mt-2">Foto: {{ $heroImage->credit }}</figcaption>
                         @endif
-                    @endif
-                </figure>
-                <p class="typewriter mt-4">{{ $featured->region?->name }}</p>
-                <h3 class="mt-1 font-display text-3xl font-bold leading-tight"><a class="hover:text-rust" href="{{ route('places.show', $featured->slug) }}">{{ $featured->name }}</a></h3>
-                <p class="mt-3 max-w-[48ch] text-ink-soft">{{ $featured->summary }}</p>
-                <div class="mt-2"><x-bookmark-button :place="$featured" :saved="in_array($featured->id, $saved, true)" /></div>
-            </section>
-        @endif
-    </div>
+                    </figure>
+                @endif
+            </div>
+            <div @class(['lg:col-span-5' => $heroImage, 'lg:col-span-8' => ! $heroImage])>
+                <p class="typewriter">Berkas pilihan, {{ $featured->region?->name }}</p>
+                <h2 id="sorotan" class="mt-2 font-display text-4xl font-bold leading-tight"><a class="hover:text-rust" href="{{ route('places.show', $featured->slug) }}">{{ $featured->name }}</a></h2>
+                <p class="mt-4 max-w-[52ch] text-lg leading-relaxed text-ink-soft">{{ $featured->summary }}</p>
+                <div class="mt-6 flex flex-wrap items-center gap-4">
+                    <x-button :href="route('places.show', $featured->slug)" variant="secondary">Buka berkas</x-button>
+                    <x-bookmark-button :place="$featured" :saved="in_array($featured->id, $saved, true)" />
+                </div>
+            </div>
+        </section>
+    @endif
 
     @if ($isEmpty)
         <section class="mt-16 max-w-xl border-t border-brass/60 pt-6">

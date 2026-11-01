@@ -67,6 +67,8 @@ class ArchiveServiceProvider extends ServiceProvider
         }
 
         Gate::define('manage-imports', fn ($user) => $user->isAdmin());
+        Gate::define('manage-site', fn ($user) => $user->isAdmin());
+        Gate::define('reset-catalog', fn ($user) => $user->isSuperAdmin());
         Gate::define('rollback-import', fn ($user) => $user->isSuperAdmin());
         Gate::define('view-audit-logs', fn ($user) => $user->isSuperAdmin());
         Gate::define('manage-roles', fn ($user) => $user->isSuperAdmin());

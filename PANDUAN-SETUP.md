@@ -105,3 +105,24 @@ Checklist ini melengkapi FILE 20 blueprint.
 8. Backup database dan `storage/app/public` terenkripsi, lalu uji restore sebelum rilis.
 9. Google Maps: key browser dibatasi referrer dan API, key server dibatasi IP, budget alert aktif (docs/PETA.md).
 10. Setelah deploy, uji dari browser bersih di ponsel dan desktop: daftar, planner kedua mode, simpan, peta, dan halaman admin.
+
+## Foto sampul beranda
+
+Masuk sebagai admin, buka Admin, Beranda. Unggah foto Pulau Bali (lebar minimal 1000 piksel; tampilan memotong ke 4:5 di desktop), isi alt text dan kredit atau lisensi. Pastikan `php artisan storage:link` sudah dijalankan dan `APP_URL` sama dengan alamat situs, karena URL foto dibentuk dari keduanya. Sumber foto yang aman: foto milik sendiri, Wikimedia Commons dengan lisensi CC (cantumkan nama pembuat dan lisensinya), atau Unsplash (cantumkan nama fotografer).
+
+## Hapus semua tempat dan hotel
+
+Untuk mengganti katalog dari nol. Data dihapus permanen, termasuk yang terbit, beserta fotonya. Rencana pengguna tetap ada tetapi tempat di dalamnya hilang. Buat cadangan database dulu.
+
+Lewat admin (super-admin): Admin, Ringkasan, bagian Zona berbahaya, Hapus semua tempat dan hotel. Ketik HAPUS SEMUA dan kata sandi Anda.
+
+Lewat terminal:
+
+    php artisan archive:reset-catalog --dry-run                    # lihat jumlahnya saja
+    php artisan archive:reset-catalog --actor=email-super-admin     # hapus, dengan konfirmasi
+
+## Katalog awal hasil riset
+
+`katalog-dewata-2026-11-01.csv` berisi 26 tempat di 9 wilayah dan 1 hotel, dengan koordinat dan sumber. Impor lewat Admin, Impor dataset. Semua baris berstatus "Perlu ditinjau" dengan tanggal riset, sehingga langsung lolos syarat terbit: setelah impor, buka Admin, Tempat, lalu "Terbitkan semua yang siap".
+
+`perlu-dilengkapi.csv` berisi entri yang belum punya koordinat tepercaya. Isi kolom latitude dan longitude (misalnya dari Google Maps: klik kanan titik, salin angka), lalu impor seperti biasa. Baris tambahan Anda bisa memakai format yang sama; id harus unik.

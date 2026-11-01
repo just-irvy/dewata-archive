@@ -60,4 +60,12 @@
             </ul>
         </div>
     </section>
+
+    @can('reset-catalog')
+        <section aria-labelledby="zona-berbahaya" class="mt-16 border-t-2 border-oxblood pt-6">
+            <h2 id="zona-berbahaya" class="text-2xl text-oxblood">Zona berbahaya</h2>
+            <p class="mt-2 max-w-[62ch] text-sm text-ink-soft">Hapus permanen semua tempat dan hotel untuk mengganti katalog dari nol. Hanya super-admin.</p>
+            <p class="mt-3"><a class="btn btn-link text-oxblood" href="{{ route('admin.catalog-reset.show') }}">Hapus semua tempat dan hotel</a></p>
+        </section>
+    @endcan
 </x-layouts.admin>

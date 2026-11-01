@@ -122,6 +122,13 @@ Route::middleware(['auth', EnsureUserIsAdmin::class])->prefix('admin')->name('ad
     Route::post('imports/{batch:id}/rollback', [Admin\ImportController::class, 'rollback'])->name('imports.rollback');
 
     Route::get('audit-logs', [Admin\AuditLogController::class, 'index'])->name('audit-logs.index');
+
+    Route::get('catalog-reset', [Admin\CatalogResetController::class, 'show'])->name('catalog-reset.show');
+    Route::delete('catalog-reset', [Admin\CatalogResetController::class, 'destroy'])->name('catalog-reset.destroy');
+
+    Route::get('home', [Admin\HomeCoverController::class, 'edit'])->name('home.edit');
+    Route::post('home', [Admin\HomeCoverController::class, 'update'])->name('home.update');
+    Route::delete('home', [Admin\HomeCoverController::class, 'destroy'])->name('home.destroy');
 });
 
 if (app()->isLocal()) {

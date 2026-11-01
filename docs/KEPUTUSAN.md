@@ -287,3 +287,23 @@ Thumbnail foto: kartu masih memakai foto yang sudah diperkecil ke 2000 piksel. U
 ## Yang belum bisa saya pastikan
 
 Peta dengan key sungguhan. Tes JS memakai objek Google tiruan, termasuk pergantian hari. Uji dengan key Anda sesuai docs/PETA.md. Seret-lepas diuji lewat fungsi posisinya dan alur form, tetapi tidak dengan gestur seret di browser.
+
+# Beranda: foto sampul dan lembar peta Bali
+
+Foto sampul Pulau Bali dipasang admin di Admin, Beranda (`/admin/home`), bukan ditanam di kode. Alasannya FILE 13 dan FILE 16: setiap foto butuh alt text dan keterangan hak pakai, dan saya tidak bisa memastikan hak pakai foto dari internet. Aturannya sama dengan foto tempat: alt text wajib, kredit atau lisensi wajib salah satu. Foto diolah ulang seperti impor foto (orientasi diperbaiki, metadata termasuk GPS dibuang, lebar maksimal 2400 piksel), disimpan dengan nama acak di `site/`, dan setiap perubahan masuk audit log. Datanya di tabel baru `site_settings`.
+
+Selama foto belum dipasang atau belum lengkap, beranda menampilkan lembar peta Bali (`x-bali-plate`). Garis pantainya dari Natural Earth 1:10m yang berstatus domain publik, disimpan di `resources/data/bali-outline.json`. Repo data BAKOSURTANAL yang lebih detail sempat dipertimbangkan, tetapi tidak mencantumkan lisensi. Titik merah adalah tempat terbit, diproyeksikan dari koordinat database dengan proyeksi yang sama, dan skala 20 km dihitung dari proyeksi itu. Peta ini ilustrasi, bukan alat navigasi.
+
+Tempat sorotan (featured_at) pindah dari kolom kanan hero ke seksi "Berkas pilihan" sendiri di bawahnya, sesuai urutan 01 dan 02 di FILE 03.
+
+# Gaya select
+
+Semua `select.field-input` memakai panah tinta sendiri. Di Chrome dan Edge 135+ (`appearance: base-select`), daftar pilihan juga bergaya arsip: latar kertas, garis tinta, sorotan rust, dan penanda kotak untuk pilihan aktif. Firefox dan Safari tetap menampilkan daftar bawaan sistem, karena isi daftar native tidak bisa diberi gaya di sana. Elemennya tetap `<select>` asli, jadi keyboard, pembaca layar, dan form tanpa JavaScript tidak berubah.
+
+# Hapus semua tempat dan hotel
+
+`ResetCatalog` menghapus permanen semua tempat dan hotel (termasuk yang dihapus sementara), foto beserta berkasnya, bookmark, isi koleksi, dan item di rencana pengguna. Item rencana dihapus lebih dulu karena `trip_plan_items.place_id` memakai restrictOnDelete. Rencana pengguna, wilayah, kategori, tag, koleksi, dan akun tetap ada. Hanya super-admin, dengan frasa HAPUS SEMUA dan kata sandi, dan tercatat di audit log. Karena slug dan external_id ikut hilang, katalog baru bisa diimpor ulang dengan id dan slug yang sama.
+
+# Katalog riset 1 November 2026
+
+Koordinat diambil dari infobox Wikipedia bila ada, selain itu dari Sygic Travel (data Wikipedia/OSM), basis data SEAArts, atau listing Wikivoyage. Sumber per baris tercatat di kolom note. Kuta, Sanur, dan Taman Nasional Bali Barat hanya punya koordinat tingkat menit (presisi sekitar 1 km) dan diberi catatan. Entri tanpa koordinat tepercaya (Penglipuran, Kelingking, Amandari) dipisah ke `perlu-dilengkapi.csv`, tidak ditebak. Harga hotel dikosongkan karena tidak ada sumber harga bertanggal; hotel tetap bisa terbit dengan keterangan "harga tidak tersedia". Ringkasan ditulis ulang dengan kata-kata sendiri, bukan disalin dari sumber.

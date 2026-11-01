@@ -55,14 +55,8 @@ class PlannerController extends Controller
             'themes' => $facets->themes(),
             'access' => $facets->accessibility(),
             'hotelRegions' => Region::query()->published()
-                ->whereHas(
-                    'hotels',
-                    fn (Builder $q) => $q->published()
-                        ->whereNotNull('lat')
-                        ->whereNotNull('lng')
-                )
-                ->orderBy('name')
-                ->get(),
+                ->whereHas('hotels', fn (Builder $q) => $q->published())
+                ->orderBy('name')->get(),
             'hotelTypes' => Hotel::query()->published()->distinct()->pluck('type')
                 ->mapWithKeys(fn ($type) => [$type->value => $type->label()])->sortKeys()->all(),
             'paces' => Pace::cases(),
@@ -91,7 +85,7 @@ class PlannerController extends Controller
     public function manual(): View
     {
         return view('planner.manual', [
-            'regions' => $this->regionsForManual(),
+            'regions' => $this->regionsWithPlaces(),
             'transports' => TransportMode::cases(),
         ]);
     }
@@ -102,24 +96,6 @@ class PlannerController extends Controller
 
         return redirect(PlanAccess::editorUrl($plan))
             ->with('status', 'Arsip kosong dibuat dengan '.$plan->days_count.' hari. Cari tempat dari katalog lalu tambahkan ke hari yang Anda pilih.');
-    }
-
-    private function regionsForManual()
-    {
-        return Region::query()->published()
-            ->where(function (Builder $query) {
-                $query->whereHas(
-                    'places',
-                    fn (Builder $places) => $places->published()
-                )->orWhereHas(
-                    'hotels',
-                    fn (Builder $hotels) => $hotels->published()
-                        ->whereNotNull('lat')
-                        ->whereNotNull('lng')
-                );
-            })
-            ->orderBy('name')
-            ->get();
     }
 
     private function regionsWithPlaces()

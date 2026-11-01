@@ -37,7 +37,7 @@ Katalog awal dimasukkan lewat Admin, Impor dataset (`combined_dataset_150_v4.csv
 
 ```bash
 vendor/bin/pint --test   # gaya kode
-php artisan test         # 334 tes PHP
+php artisan test         # 348 tes PHP
 npm run test:js          # 39 tes JavaScript (peta dan planner)
 ```
 

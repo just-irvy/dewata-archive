@@ -2,6 +2,7 @@
 @php
     $nav = [
         ['admin.index', 'admin.index', 'Ringkasan'],
+        ['admin.home.edit', 'admin.home.*', 'Beranda'],
         ['admin.places.index', 'admin.places.*', 'Tempat'],
         ['admin.hotels.index', 'admin.hotels.*', 'Hotel'],
         ['admin.regions.index', 'admin.regions.*', 'Wilayah'],
