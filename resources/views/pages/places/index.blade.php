@@ -67,9 +67,9 @@
                     @endif
                 </div>
             @else
-                <ul class="grid gap-x-8 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
+                <ul class="grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
                     @foreach ($places as $place)
-                        <li><x-place-card :place="$place" :saved="in_array($place->id, $saved, true)" /></li>
+                        <li><x-dossier-card :place="$place" :saved="in_array($place->id, $saved, true)" /></li>
                     @endforeach
                 </ul>
                 <div class="mt-12">{{ $places->links() }}</div>

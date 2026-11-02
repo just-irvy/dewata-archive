@@ -162,7 +162,7 @@
             <h2 id="terkait" class="text-2xl">Tempat terkait</h2>
             <ul class="mt-8 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($related as $item)
-                    <li><x-place-card :place="$item" :saved="in_array($item->id, $saved, true)" /></li>
+                    <li><x-dossier-card :place="$item" :saved="in_array($item->id, $saved, true)" /></li>
                 @endforeach
             </ul>
         </section>

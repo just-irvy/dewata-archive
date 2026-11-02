@@ -24,6 +24,8 @@
     --color-rust: #9c4935;
     --color-rust-deep: #843a29;
     --color-brass: #b18a50;
+    /* Kuningan gelap untuk TEKS: #b18a50 di atas kertas kontrasnya terlalu rendah untuk huruf kecil. */
+    --color-brass-deep: #795823;
     --color-moss: #5c6b56;
     --color-oxblood: #7a2418;
 
@@ -31,7 +33,8 @@
     --font-body: 'Inter Variable', 'Inter', system-ui, sans-serif;
     --font-typewriter: 'Courier Prime', 'Special Elite', 'Courier New', monospace;
 
-    --radius-control: 3px;
+    /* DESIGN.md (Stitch): bentuk tajam 0px untuk semua komponen. */
+    --radius-control: 0px;
 }
 
 @layer base {
@@ -362,5 +365,84 @@
             font-size: 0.875rem;
             color: var(--color-ink-soft);
         }
+    }
+}
+
+
+/* ============================================================
+   KOMPONEN ARSIP DARI DESAIN STITCH (DESIGN.md)
+   ============================================================ */
+@layer components {
+    /* Label metadata kecil: [CATATAN TERAKHIR], PILIHAN EDITOR, dsb. */
+    .kicker {
+        font-family: var(--font-typewriter);
+        font-size: 0.6875rem;
+        line-height: 1.2;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+
+    /* Bingkai arsip ganda: garis tinta luar, celah kertas, garis kuningan dalam. */
+    .archive-frame {
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-ink);
+        box-shadow:
+            inset 0 0 0 3px var(--color-surface),
+            inset 0 0 0 4px color-mix(in srgb, var(--color-brass) 85%, transparent);
+    }
+
+    /* Kartu bercap (cardstock): garis tinta dan bayangan padat bergeser, tanpa blur. */
+    .archive-slip {
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-ink);
+        box-shadow: 4px 4px 0 0 var(--color-ink);
+    }
+
+    /* Cap verifikasi bergaya stempel karet. */
+    .stamp {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.15rem 0.4rem;
+        border: 1px solid currentColor;
+        font-family: var(--font-typewriter);
+        font-size: 0.6875rem;
+        line-height: 1.2;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+    .stamp-verified { color: var(--color-moss); }
+    .stamp-review { color: var(--color-brass-deep); border-style: dashed; }
+    .stamp-unknown { color: var(--color-ink-soft); border-color: rgb(32 39 35 / 0.35); }
+    .stamp-solid { color: var(--color-surface); background-color: var(--color-rust); border-color: var(--color-rust); }
+}
+
+/*
+| Transisi antarhalaman (View Transitions lintas dokumen, Chrome dan Edge 126+).
+| Halaman lama memudar ke halaman baru, dan nama situs bergeser mulus antara versi di atas foto
+| dan versi kertas. Browser lain berpindah biasa. Dimatikan bila pengguna memilih kurangi gerak.
+*/
+@view-transition {
+    navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 200ms;
+    animation-timing-function: ease;
+}
+
+::view-transition-group(nama-situs) {
+    animation-duration: 260ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+        animation: none !important;
     }
 }

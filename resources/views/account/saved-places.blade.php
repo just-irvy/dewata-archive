@@ -11,7 +11,7 @@
     @else
         <ul class="mt-10 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
             @foreach ($places as $place)
-                <li><x-place-card :place="$place" :saved="true" /></li>
+                <li><x-dossier-card :place="$place" :saved="true" /></li>
             @endforeach
         </ul>
         <div class="mt-12">{{ $saved->links() }}</div>

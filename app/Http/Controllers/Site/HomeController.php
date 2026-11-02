@@ -25,14 +25,14 @@ class HomeController extends Controller
         $places = Place::query()->published()->with($with)
             ->when($featured, fn (Builder $q) => $q->whereKeyNot($featured->id))
             ->orderByDesc('published_at')->orderByDesc('id')
-            ->limit(6)->get();
+            ->limit(8)->get();
 
         $regions = Region::query()->published()
             ->withCount(['places' => fn (Builder $q) => $q->published()])
             ->whereHas('places', fn (Builder $q) => $q->published())
             ->orderBy('name')->get();
 
-        $hotels = Hotel::query()->published()->with(['region', 'media'])->orderByDesc('id')->limit(3)->get();
+        $hotels = Hotel::query()->published()->with(['region', 'media'])->orderByDesc('id')->limit(6)->get();
 
         // Titik untuk lembar peta Bali, hanya bila foto sampul belum dipasang.
         $cover = SiteSetting::homeCover();
@@ -41,10 +41,18 @@ class HomeController extends Controller
             ->limit(1000)->get(['lat', 'lng'])
             ->map(fn (Place $p) => [(float) $p->lat, (float) $p->lng]);
 
+        // Angka di bilah koleksi (desain Stitch) selalu dihitung dari data terbit, bukan angka hiasan.
+        $stats = [
+            'places' => Place::query()->published()->count(),
+            'hotels' => Hotel::query()->published()->count(),
+            'regions' => $regions->count(),
+        ];
+
         return view('pages.home', [
             'cover' => $cover,
+            'stats' => $stats,
             'mapPoints' => $mapPoints->all(),
-            'placeTotal' => $cover ? 0 : Place::query()->published()->count(),
+            'placeTotal' => $stats['places'],
             'featured' => $featured,
             'places' => $places,
             'regions' => $regions,

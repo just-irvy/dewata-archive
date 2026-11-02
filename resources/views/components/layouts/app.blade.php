@@ -1,4 +1,4 @@
-@props(['title' => null, 'description' => null])
+@props(['title' => null, 'description' => null, 'bleed' => false, 'masthead' => 'paper'])
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -16,13 +16,26 @@
         {{ __('ui.skip') }}
     </a>
 
-    <x-masthead />
+    {{-- masthead="none": halaman menaruh masthead sendiri, misalnya di atas foto sampul beranda. --}}
+    @if ($masthead !== 'none')
+        <x-masthead :variant="$masthead" />
+    @endif
 
-    <main id="konten-utama" tabindex="-1" class="mx-auto w-full max-w-6xl flex-1 px-4 py-10 outline-none sm:px-6 md:py-14">
-        <x-flash />
-        {{ $slot }}
-    </main>
+    @if ($bleed)
+        {{-- Halaman selebar layar: halaman mengatur sendiri lebar dan jarak isinya. --}}
+        <main id="konten-utama" tabindex="-1" class="w-full flex-1 outline-none">
+            @if (session('status'))
+                <div class="mx-auto w-full max-w-[120rem] px-5 pt-6 sm:px-8 lg:px-14"><x-flash /></div>
+            @endif
+            {{ $slot }}
+        </main>
+    @else
+        <main id="konten-utama" tabindex="-1" class="mx-auto w-full max-w-[120rem] flex-1 px-5 py-10 outline-none sm:px-8 md:py-14 lg:px-14">
+            <x-flash />
+            {{ $slot }}
+        </main>
+    @endif
 
-    <x-site-footer />
+    <x-site-footer :wide="true" />
 </body>
 </html>

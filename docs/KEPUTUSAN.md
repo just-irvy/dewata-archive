@@ -307,3 +307,31 @@ Semua `select.field-input` memakai panah tinta sendiri. Di Chrome dan Edge 135+ 
 # Katalog riset 1 November 2026
 
 Koordinat diambil dari infobox Wikipedia bila ada, selain itu dari Sygic Travel (data Wikipedia/OSM), basis data SEAArts, atau listing Wikivoyage. Sumber per baris tercatat di kolom note. Kuta, Sanur, dan Taman Nasional Bali Barat hanya punya koordinat tingkat menit (presisi sekitar 1 km) dan diberi catatan. Entri tanpa koordinat tepercaya (Penglipuran, Kelingking, Amandari) dipisah ke `perlu-dilengkapi.csv`, tidak ditebak. Harga hotel dikosongkan karena tidak ada sumber harga bertanggal; hotel tetap bisa terbit dengan keterangan "harga tidak tersedia". Ringkasan ditulis ulang dengan kata-kata sendiri, bukan disalin dari sumber.
+
+# Beranda: adaptasi desain Stitch
+
+Beranda disusun ulang dari desain Google Stitch milik pemilik proyek (`DESIGN.md`, `code.html`). Yang diadopsi: hero foto selebar layar dengan masthead menumpang di atasnya (hanya bila foto sampul dipasang; tanpa foto, masthead kertas dan lembar peta Bali), bilah "Koleksi terbit", berkas pilihan bergaya dosir dengan panel koordinat, indeks wilayah bergaya buku besar, kartu berkas dengan kode arsip dan cap verifikasi, kartu penginapan berbingkai ganda, ajakan perencana dengan cap "Modul perjalanan", footer berkolom. Token dari DESIGN.md: sudut tajam (`--radius-control: 0`), bingkai ganda tinta dan kuningan (`.archive-frame`), kartu cardstock dengan bayangan padat (`.archive-slip`), cap verifikasi (`.stamp-*`), label `.kicker`.
+
+Yang tidak diadopsi dan alasannya:
+- Carousel "berkas kurasi bergilir": FILE 03 meminta satu cerita visual, bukan slider. Diganti satu berkas pilihan.
+- Palet Material berwarna kehijauan pada `code.html`: bertentangan dengan DESIGN.md sendiri dan token blueprint. Dipakai Archive Paper, Ink, Rust, Brass, Moss.
+- Angka hiasan (142 tempat, 48 penginapan, Vol. IV, Edisi 2025, jam 09:42): diganti angka dari database, karena FILE 01 meminta bukti, bukan kepastian karangan.
+- Isi contoh (Pondok Subak Warih, elevasi, tempo rekomendasi, foto AI): diganti data asli. Kolom yang tidak ada di database tidak ditampilkan.
+- Klaim "bebas algoritma rekomendasi" dan "dokumen resmi": tidak benar untuk produk ini, karena planner punya mode rekomendasi berbasis aturan dan data belum tentu terverifikasi editor.
+- Pencarian ⌘K, foto profil, dan jam berjalan: fiturnya tidak ada. "Cari arsip" menuju halaman Jelajah.
+- Tailwind CDN, Google Fonts, dan Material Symbols: bentrok dengan build proyek dan menambah permintaan ke pihak ketiga. Font sudah self-host; ikon diganti SVG kecil.
+- Tautan footer ke halaman yang tidak ada (kode etik, hak cipta, kirim koreksi): tidak dibuat.
+
+Kode arsip (ARC·BAD·004) dan koordinat derajat-menit-detik diturunkan dari ID, wilayah, dan lat/lng record (`App\Support\ArchiveCode`).
+
+# Perbaikan: peta tidak pernah dimuat
+
+`MapController` dulu disimpan di data komponen Alpine (`this.controller`). Alpine membungkus data dengan proxy reaktif, sedangkan kelas itu memakai private field (`#set`, `#buildMap`). Pemanggilan lewat proxy melempar `TypeError: Receiver must be an instance of class`, sehingga peta macet di "Peta belum dimuat" tanpa pesan. Tes JS tidak menangkapnya karena menguji controller tanpa Alpine. Sekarang controller disimpan di variabel closure per komponen, dan `index.test.mjs` menjaga agar tidak kembali masuk ke data reaktif.
+
+# Peralihan hero dan konsistensi antarhalaman
+
+Hero beranda tidak lagi terpotong lurus dari foto gelap ke kertas: bagian bawah foto memudar ke warna kertas, lalu penanda gulir dan keterangan foto tampil di pita kertas seperti keterangan foto di surat kabar. Keterangan panjang dipotong satu baris; teks lengkapnya ada di atribut title dan alt foto.
+
+Masthead semua halaman kini bergaya sama dengan beranda (nama situs kapital, tagline miring, navigasi mesin ketik, tombol planner rust) dan memakai lebar yang sama (`max-w-[120rem]`, margin 3,5rem di desktop), sehingga tidak bergeser saat berpindah halaman. Daftar tempat di Jelajah, wilayah, tempat terkait, dan tempat tersimpan memakai kartu berkas yang sama dengan beranda.
+
+Perpindahan halaman memakai View Transitions lintas dokumen (`@view-transition`, Chrome dan Edge 126+): halaman memudar 200 ms dan nama situs bergeser mulus. Browser lain berpindah biasa; dimatikan bila pengguna memilih kurangi gerak.

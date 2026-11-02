@@ -14,65 +14,72 @@ function installAuthFailureHandler() {
 }
 
 export function registerMaps(Alpine) {
-    Alpine.data('archiveMap', (payload) => ({
-        state: 'idle',
-        errorCode: null,
-        routeState: 'none',
-        routeError: null,
-        routeLegs: [],
-        routeTotal: null,
-        routeWarnings: [],
-        controller: null,
-        ready: null,
+    Alpine.data('archiveMap', (payload) => {
+        // Controller SENGAJA tidak disimpan di data Alpine. Alpine membungkus data dengan proxy
+        // reaktif, sedangkan MapController memakai private field (#set, #buildMap). Private field
+        // menolak diakses lewat proxy ("Receiver must be an instance of class"), sehingga peta
+        // tidak pernah dimuat. Variabel closure ini satu per komponen dan tidak reaktif.
+        let controller = null;
 
-        init() {
-            this.ready = this.$nextTick().then(() => this.boot());
-        },
+        return {
+            state: 'idle',
+            errorCode: null,
+            routeState: 'none',
+            routeError: null,
+            routeLegs: [],
+            routeTotal: null,
+            routeWarnings: [],
+            ready: null,
 
-        async boot() {
-            const [{ MapController }, { loadGoogleLibraries }] = await Promise.all([
-                import('./controller.mjs'),
-                import('./loader.mjs'),
-            ]);
+            init() {
+                this.ready = this.$nextTick().then(() => this.boot());
+            },
 
-            this.controller = new MapController({
-                payload,
-                canvas: this.$refs.canvas,
-                loadLibraries: (libraries) => loadGoogleLibraries({ key: payload.key, libraries }),
-                onChange: (patch) => Object.assign(this, patch),
-            });
+            async boot() {
+                const [{ MapController }, { loadGoogleLibraries }] = await Promise.all([
+                    import('./controller.mjs'),
+                    import('./loader.mjs'),
+                ]);
 
-            controllers.add(this.controller);
-            installAuthFailureHandler();
+                controller = new MapController({
+                    payload,
+                    canvas: this.$refs.canvas,
+                    loadLibraries: (libraries) => loadGoogleLibraries({ key: payload.key, libraries }),
+                    onChange: (patch) => Object.assign(this, patch),
+                });
 
-            if (payload.autoload !== false && 'IntersectionObserver' in window) {
-                const observer = new IntersectionObserver(
-                    (entries) => {
-                        if (entries.some((entry) => entry.isIntersecting)) {
-                            observer.disconnect();
-                            this.controller.load();
-                        }
-                    },
-                    { rootMargin: '200px' },
-                );
-                observer.observe(this.$root);
-            }
-        },
+                controllers.add(controller);
+                installAuthFailureHandler();
 
-        async load() {
-            await this.ready;
-            await this.controller?.load();
-        },
+                if (payload.autoload !== false && 'IntersectionObserver' in window) {
+                    const observer = new IntersectionObserver(
+                        (entries) => {
+                            if (entries.some((entry) => entry.isIntersecting)) {
+                                observer.disconnect();
+                                controller.load();
+                            }
+                        },
+                        { rootMargin: '200px' },
+                    );
+                    observer.observe(this.$root);
+                }
+            },
 
-        /** Planner: ganti hari tanpa membuat peta baru. Rute dihitung ulang untuk hari itu saja. */
-        async swap(patch) {
-            await this.ready;
-            if (!this.controller) return;
-            await this.controller.update({ ...this.controller.payload, ...patch });
-        },
+            async load() {
+                await this.ready;
+                await controller?.load();
+            },
 
-        destroy() {
-            if (this.controller) controllers.delete(this.controller);
-        },
-    }));
+            /** Planner: ganti hari tanpa membuat peta baru. Rute dihitung ulang untuk hari itu saja. */
+            async swap(patch) {
+                await this.ready;
+                if (!controller) return;
+                await controller.update({ ...controller.payload, ...patch });
+            },
+
+            destroy() {
+                if (controller) controllers.delete(controller);
+            },
+        };
+    });
 }
