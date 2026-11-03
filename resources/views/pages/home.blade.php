@@ -19,15 +19,16 @@
     {{-- 1. HERO --}}
     @if ($cover)
         {{-- Hero satu layar penuh: foto, masthead, dan isi pas di tinggi layar (svh agar tidak tertutup bilah alamat ponsel). --}}
-        <section aria-labelledby="judul-beranda" class="relative isolate flex min-h-svh flex-col overflow-hidden bg-ink text-surface">
-            <img src="{{ $cover['url'] }}" alt="{{ $cover['alt_text'] }}" @if ($cover['width'] ?? null) width="{{ $cover['width'] }}" height="{{ $cover['height'] }}" @endif class="absolute inset-0 -z-20 h-full w-full object-cover" fetchpriority="high">
+        {{-- hero-cover: saat digulir, foto perlahan mendekat dan teks pembuka memudar (lihat app.css, efek gulir). --}}
+        <section aria-labelledby="judul-beranda" class="hero-cover relative isolate flex min-h-svh flex-col overflow-hidden bg-ink text-surface">
+            <img src="{{ $cover['url'] }}" alt="{{ $cover['alt_text'] }}" @if ($cover['width'] ?? null) width="{{ $cover['width'] }}" height="{{ $cover['height'] }}" @endif class="hero-cover__photo absolute inset-0 -z-20 h-full w-full object-cover" fetchpriority="high">
             {{-- Gradasi agar teks masthead dan judul selalu terbaca di atas foto apa pun. --}}
             <div aria-hidden="true" class="absolute inset-0 -z-10 bg-gradient-to-b from-[#101713]/80 via-[#161d19]/40 to-[#161d19]/60"></div>
             <div aria-hidden="true" class="absolute inset-0 -z-10 bg-gradient-to-r from-[#101713]/55 via-transparent to-transparent"></div>
 
             <x-masthead variant="overlay" />
 
-            <div class="{{ $wide }} flex flex-1 items-center py-5 sm:py-6 lg:py-[2vh]">
+            <div class="hero-cover__lead {{ $wide }} flex flex-1 items-center py-5 sm:py-6 lg:py-[2vh]">
                 <div class="max-w-3xl">
                     <p class="kicker flex items-center gap-2 text-[#ffdad2]"><span aria-hidden="true" class="inline-block size-2.5 bg-[#ffdad2]"></span>{{ $kicker }}</p>
                     <h1 id="judul-beranda" class="mt-3 text-[2.1rem] leading-[1.08] text-surface drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] sm:mt-4 sm:text-5xl lg:mt-[1.8vh] lg:text-[clamp(2.4rem,6.6vh,4.25rem)]">Panduan penjelajahan Bali sebagai arsip pribadi yang tenang</h1>
@@ -106,7 +107,9 @@
                     : null;
             @endphp
             <section aria-labelledby="sorotan" class="mt-16 lg:mt-20">
-                <div class="archive-frame p-5 sm:p-8">
+                {{-- featured-file: saat ditunjuk kursor atau difokus keyboard, berkas terangkat dari tempatnya (lihat app.css). --}}
+                <div class="featured-file">
+                <div class="featured-file__sheet archive-frame p-5 sm:p-8">
                     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-ink/20 pb-3">
                         <div class="flex flex-wrap items-center gap-3">
                             <span class="stamp stamp-solid">Pilihan editor</span>
@@ -119,7 +122,9 @@
                         @if ($heroImage)
                             <figure class="lg:col-span-6">
                                 <a href="{{ route('places.show', $featured->slug) }}" tabindex="-1" aria-hidden="true" class="block border border-ink/15 bg-paper p-2">
-                                    <img src="{{ $heroImage->url() }}" alt="" @if ($heroImage->width) width="{{ $heroImage->width }}" height="{{ $heroImage->height }}" @endif class="aspect-[4/3] w-full object-cover" loading="lazy">
+                                    <span class="featured-file__window block overflow-hidden">
+                                        <img src="{{ $heroImage->url() }}" alt="" @if ($heroImage->width) width="{{ $heroImage->width }}" height="{{ $heroImage->height }}" @endif class="featured-file__photo aspect-[4/3] w-full object-cover" loading="lazy">
+                                    </span>
                                 </a>
                                 @if ($heroImage->credit)
                                     <figcaption class="typewriter mt-2 flex flex-wrap justify-between gap-x-3 text-[0.75rem]"><span>Foto: {{ $heroImage->credit }}</span>@if ($heroImage->license_note)<span class="font-bold text-rust">({{ $heroImage->license_note }})</span>@endif</figcaption>
@@ -142,11 +147,12 @@
                             </dl>
 
                             <div class="mt-auto flex flex-wrap items-center justify-between gap-4 border-t border-ink/20 pt-4">
-                                <a class="kicker text-[0.8125rem] text-rust hover:text-ink" href="{{ route('places.show', $featured->slug) }}">Buka berkas lengkap <span aria-hidden="true">→</span></a>
+                                <a class="kicker text-[0.8125rem] text-rust hover:text-ink" href="{{ route('places.show', $featured->slug) }}">Buka berkas lengkap <span class="featured-file__arrow" aria-hidden="true">→</span></a>
                                 <x-bookmark-button :place="$featured" :saved="in_array($featured->id, $saved, true)" />
                             </div>
                         </div>
                     </div>
+                </div>
                 </div>
             </section>
         @endif

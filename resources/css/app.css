@@ -418,6 +418,164 @@
     .stamp-review { color: var(--color-brass-deep); border-style: dashed; }
     .stamp-unknown { color: var(--color-ink-soft); border-color: rgb(32 39 35 / 0.35); }
     .stamp-solid { color: var(--color-surface); background-color: var(--color-rust); border-color: var(--color-rust); }
+
+    /*
+    | Berkas pilihan di beranda: saat ditunjuk kursor (atau difokus keyboard), berkas terangkat
+    | dari tempatnya seperti ditarik dari laci arsip. Lembar bergeser ke kiri atas dan memperlihatkan
+    | bayangan tinta padat di bekas posisinya (bahasa yang sama dengan .archive-slip), foto sedikit
+    | mendekat di dalam passe-partout, dan panah "Buka berkas lengkap" maju selangkah.
+    | Hanya transform dan opacity yang dianimasikan. Masuk ease-out, keluar ease-in, 150 sampai 300 ms.
+    */
+    .featured-file {
+        --file-lift: 6px;
+        --file-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+        --file-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+        position: relative;
+        isolation: isolate;
+    }
+
+    /* Bayangan tinta: blok seukuran lembar yang diam di posisi semula, muncul saat lembar terangkat. */
+    .featured-file::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background-color: var(--color-ink);
+        opacity: 0;
+        transition: opacity 150ms var(--file-ease-in);
+    }
+
+    .featured-file__sheet {
+        position: relative;
+        transition: transform 150ms var(--file-ease-in);
+    }
+
+    .featured-file__photo {
+        transition: transform 200ms var(--file-ease-in);
+    }
+
+    .featured-file__arrow {
+        display: inline-block;
+        transition: transform 150ms var(--file-ease-in);
+    }
+
+    /* Keyboard: fokus di dalam berkas memberi keadaan yang sama, di perangkat apa pun. */
+    .featured-file:focus-within::before {
+        opacity: 1;
+        transition: opacity 200ms var(--file-ease-out);
+    }
+    .featured-file:focus-within .featured-file__sheet {
+        transform: translate(calc(var(--file-lift) * -1), calc(var(--file-lift) * -1));
+        transition: transform 200ms var(--file-ease-out);
+    }
+    .featured-file:focus-within .featured-file__photo {
+        transform: scale(1.04);
+        transition: transform 300ms var(--file-ease-out);
+    }
+    .featured-file:focus-within .featured-file__arrow {
+        transform: translateX(4px);
+        transition: transform 200ms var(--file-ease-out);
+    }
+
+    /* Kursor: hanya perangkat yang benar-benar bisa hover, agar efek tidak "lengket" setelah diketuk di ponsel. */
+    @media (hover: hover) and (pointer: fine) {
+        .featured-file:hover::before {
+            opacity: 1;
+            transition: opacity 200ms var(--file-ease-out);
+        }
+        .featured-file:hover .featured-file__sheet {
+            transform: translate(calc(var(--file-lift) * -1), calc(var(--file-lift) * -1));
+            transition: transform 200ms var(--file-ease-out);
+        }
+        .featured-file:hover .featured-file__photo {
+            transform: scale(1.04);
+            transition: transform 300ms var(--file-ease-out);
+        }
+        .featured-file:hover .featured-file__arrow {
+            transform: translateX(4px);
+            transition: transform 200ms var(--file-ease-out);
+        }
+    }
+
+    /*
+    | Kurangi gerak: lembar tidak bergeser dan foto tidak mendekat. Karena lembar diam, bayangan
+    | tinta dipindah ke kanan bawah agar tetap terlihat; ia muncul seketika sebagai penanda keadaan.
+    */
+    @media (prefers-reduced-motion: reduce) {
+        .featured-file::before {
+            inset: var(--file-lift) calc(var(--file-lift) * -1) calc(var(--file-lift) * -1) var(--file-lift);
+        }
+        .featured-file .featured-file__sheet,
+        .featured-file .featured-file__photo,
+        .featured-file .featured-file__arrow {
+            transform: none !important;
+        }
+    }
+
+    /*
+    | Efek gulir di beranda (CSS scroll-driven animations, tanpa pustaka JavaScript).
+    | Gerak terikat langsung ke posisi gulir: berhenti menggulir, gerak ikut berhenti; menggulir
+    | balik, gerak ikut mundur. Scroll bawaan browser tidak diambil alih.
+    |
+    | 1. Hero: saat pengguna mulai menggulir, foto sampul perlahan mendekat dan sedikit tertinggal
+    |    (paralaks ringan), sementara teks pembuka naik dan memudar.
+    | 2. Berkas pilihan: saat kartu masuk ke layar, jendela foto tumbuh dari cetakan kecil di
+    |    tengah passe-partout sampai mengisi bingkainya.
+    |
+    | Dibungkus @supports agar browser tanpa dukungan cukup menampilkan tampilan statis, dan
+    | hanya aktif bila pengguna tidak meminta "kurangi gerak". Hanya transform dan opacity.
+    */
+    @supports (animation-timeline: view()) {
+        @media (prefers-reduced-motion: no-preference) {
+            .hero-cover {
+                view-timeline-name: --hero-cover;
+                view-timeline-axis: block;
+            }
+
+            .hero-cover__photo,
+            .hero-cover__lead {
+                animation-duration: auto;
+                animation-timing-function: linear;
+                animation-fill-mode: both;
+                animation-timeline: --hero-cover;
+            }
+
+            .hero-cover__photo {
+                animation-name: hero-cover-photo;
+                animation-range: exit 0% exit 100%;
+                will-change: transform;
+            }
+
+            .hero-cover__lead {
+                animation-name: hero-cover-lead;
+                animation-range: exit 0% exit 55%;
+            }
+
+            .featured-file__window {
+                animation-name: featured-file-window;
+                animation-duration: auto;
+                animation-timing-function: linear;
+                animation-fill-mode: both;
+                animation-timeline: view();
+                animation-range: entry 0% entry 100%;
+            }
+        }
+    }
+}
+
+@keyframes hero-cover-photo {
+    from { transform: translateY(0) scale(1); }
+    to { transform: translateY(12%) scale(1.14); }
+}
+
+@keyframes hero-cover-lead {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-3rem); }
+}
+
+@keyframes featured-file-window {
+    from { opacity: 0.55; transform: scale(0.86); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 /*
