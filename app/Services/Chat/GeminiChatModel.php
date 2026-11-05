@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Log;
  */
 final class GeminiChatModel implements ChatModel
 {
-    public function generate(string $systemPrompt, array $contents, array $functionDeclarations): array
+    public function generate(string $systemPrompt, array $contents, array $functionDeclarations, bool $allowCalls = true): array
     {
         $key = config('services.gemini.key');
 
@@ -41,7 +41,7 @@ final class GeminiChatModel implements ChatModel
 
         if ($functionDeclarations !== []) {
             $payload['tools'] = [['functionDeclarations' => $functionDeclarations]];
-            $payload['toolConfig'] = ['functionCallingConfig' => ['mode' => 'AUTO']];
+            $payload['toolConfig'] = ['functionCallingConfig' => ['mode' => $allowCalls ? 'AUTO' : 'NONE']];
         }
 
         $url = rtrim((string) config('services.gemini.base_url'), '/')

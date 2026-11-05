@@ -13,6 +13,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 /** Admin: foto sampul Pulau Bali di beranda. */
 class HomeCoverController extends Controller
@@ -40,10 +41,16 @@ class HomeCoverController extends Controller
             // ukuran dibatasi. Nama acak, ekstensi dari isi berkas.
             $source = $request->file('file')->getRealPath();
             $tmp = tempnam(sys_get_temp_dir(), 'cover');
-            $result = ImageProcessor::process($source, $tmp, 2400);
-            $path = 'site/'.Str::random(40).'.'.$result['ext'];
-            $disk->put($path, file_get_contents($tmp));
-            @unlink($tmp);
+
+            try {
+                $result = ImageProcessor::process($source, $tmp, 2400);
+                $path = 'site/'.Str::random(40).'.'.$result['ext'];
+                $disk->put($path, file_get_contents($tmp));
+            } catch (\InvalidArgumentException $e) {
+                throw ValidationException::withMessages(['file' => 'Foto tidak bisa diproses: '.$e->getMessage().'.']);
+            } finally {
+                @unlink($tmp);
+            }
 
             if (filled($before['path'] ?? null)) {
                 $disk->delete($before['path']);

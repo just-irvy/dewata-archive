@@ -10,6 +10,7 @@ use App\Enums\VerificationStatus;
 use App\Models\AuditLog;
 use App\Models\Hotel;
 use App\Models\ImportBatch;
+use App\Models\ImportRow;
 use App\Models\Media;
 use App\Models\Place;
 use App\Models\Region;
@@ -383,5 +384,42 @@ class ImportFlowTest extends TestCase
         $this->get('/places/'.$place->slug)->assertOk()
             ->assertSee('Museum kecil di sisi barat sebuah pura')
             ->assertSee('Perlu ditinjau');
+    }
+
+    public function test_a_staged_batch_can_be_cancelled_without_touching_any_record(): void
+    {
+        $this->upload();
+        $batch = ImportBatch::query()->firstOrFail();
+
+        $this->actingAs($this->makeUser(UserRole::Admin))->delete("/admin/imports/{$batch->id}")
+            ->assertRedirect(route('admin.imports.index'));
+
+        $this->assertSame(0, ImportBatch::count());
+        $this->assertSame(0, ImportRow::count());
+        $this->assertSame(0, Place::count());
+        $this->assertTrue(AuditLog::where('action', 'import_batch.deleted')->exists());
+    }
+
+    public function test_deleting_a_committed_batch_keeps_its_records_and_needs_a_super_admin(): void
+    {
+        $batch = $this->stageAndCommit();
+        $places = Place::count();
+        $this->assertGreaterThan(0, $places);
+
+        $this->actingAs($this->makeUser(UserRole::Admin))->delete("/admin/imports/{$batch->id}")->assertForbidden();
+        $this->actingAs($this->makeUser(UserRole::SuperAdmin))->delete("/admin/imports/{$batch->id}")->assertRedirect();
+
+        $this->assertSame(0, ImportBatch::count());
+        $this->assertSame($places, Place::count());
+    }
+
+    public function test_regular_users_cannot_delete_batches(): void
+    {
+        $this->upload();
+        $batch = ImportBatch::query()->firstOrFail();
+
+        $this->actingAs($this->makeUser())->delete("/admin/imports/{$batch->id}")->assertForbidden();
+
+        $this->assertSame(1, ImportBatch::count());
     }
 }

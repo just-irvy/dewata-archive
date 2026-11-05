@@ -124,6 +124,7 @@ Route::middleware(['auth', EnsureUserIsAdmin::class])->prefix('admin')->name('ad
     Route::get('imports/create', [Admin\ImportController::class, 'create'])->name('imports.create');
     Route::post('imports', [Admin\ImportController::class, 'store'])->name('imports.store');
     Route::get('imports/{batch:id}', [Admin\ImportController::class, 'show'])->name('imports.show');
+    Route::delete('imports/{batch:id}', [Admin\ImportController::class, 'destroy'])->name('imports.destroy');
     Route::post('imports/{batch:id}/commit', [Admin\ImportController::class, 'commit'])->name('imports.commit');
     Route::post('imports/{batch:id}/rollback', [Admin\ImportController::class, 'rollback'])->name('imports.rollback');
 

@@ -24,14 +24,14 @@ class ChatController extends Controller
         @set_time_limit(75);
 
         // Pengaman tagihan: batas total pertanyaan sehari untuk seluruh situs.
+        // Tambah dulu lalu periksa hasilnya. increment() atomik, jadi permintaan serentak tidak bisa
+        // sama-sama lolos di angka batas seperti pada pola baca-lalu-tambah.
         $counter = 'chatbot.asked.'.now()->toDateString();
         Cache::add($counter, 0, now()->addDay());
 
-        if ((int) Cache::get($counter) >= (int) config('chatbot.rate.global_daily_cap')) {
+        if ((int) Cache::increment($counter) > (int) config('chatbot.rate.global_daily_cap')) {
             return $this->failure(new ChatException('cap', 503));
         }
-
-        Cache::increment($counter);
 
         try {
             return response()->json($chat->ask($request->message(), $request->history()));

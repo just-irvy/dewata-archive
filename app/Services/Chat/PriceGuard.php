@@ -11,7 +11,7 @@ final class PriceGuard
 {
     /**
      * @param  array<int, int>  $allowed  Nominal rupiah penuh yang sah.
-     * @return array<int, int>  Nominal pada jawaban yang tidak ditemukan di $allowed.
+     * @return array<int, int> Nominal pada jawaban yang tidak ditemukan di $allowed.
      */
     public static function unknownAmounts(string $answer, array $allowed): array
     {

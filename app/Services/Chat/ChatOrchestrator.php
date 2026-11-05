@@ -87,8 +87,9 @@ final class ChatOrchestrator
         }
 
         if ($answer === null) {
-            // Batas putaran tool habis: minta jawaban akhir tanpa tool.
-            $answer = $this->textOf($this->model->generate($system, $contents, []));
+            // Batas putaran atau waktu habis: minta jawaban akhir. Deklarasi tool tetap dikirim karena riwayat
+            // berisi functionCall dan functionResponse, tetapi mode NONE melarang pemanggilan baru.
+            $answer = $this->textOf($this->model->generate($system, $contents, $declarations, false));
         }
 
         // Hanya metrik. Isi pertanyaan dan jawaban tidak dicatat (FILE 15).

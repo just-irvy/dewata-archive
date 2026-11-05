@@ -22,6 +22,7 @@
 @endphp
 
 <header
+    data-masthead
     x-data="{ open: false }"
     x-on:keydown.escape.window="open = false"
     @class([

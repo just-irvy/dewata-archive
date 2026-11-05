@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\CommitImport;
+use App\Actions\RecordAudit;
 use App\Actions\RollbackImport;
 use App\Actions\StageImport;
 use App\Http\Controllers\Controller;
@@ -101,5 +102,32 @@ class ImportController extends Controller
         }
 
         return redirect()->route('admin.imports.show', $batch->id)->with('status', $message);
+    }
+
+    /**
+     * Menghapus riwayat batch dan baris stagingnya. Tempat dan hotel yang sudah dibuat tidak ikut terhapus.
+     * Batch yang sudah di-commit hanya boleh dihapus super-admin, karena setelah itu Rollback tidak tersedia.
+     */
+    public function destroy(Request $request, ImportBatch $batch, RecordAudit $audit): RedirectResponse
+    {
+        Gate::authorize('manage-imports');
+
+        if ($batch->isCommitted()) {
+            Gate::authorize('rollback-import');
+        }
+
+        $audit('import_batch.deleted', $batch, [
+            'file' => $batch->original_filename,
+            'status' => $batch->status,
+            'rows' => $batch->totals['rows'] ?? null,
+        ]);
+
+        $message = $batch->isCommitted()
+            ? 'Riwayat impor dihapus. Tempat dan hotel yang sudah dibuat tetap ada.'
+            : 'Impor dibatalkan dan dihapus. Tidak ada data yang dibuat.';
+
+        $batch->delete();
+
+        return redirect()->route('admin.imports.index')->with('status', $message);
     }
 }

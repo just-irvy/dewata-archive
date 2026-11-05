@@ -32,5 +32,16 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!--
+        | Tes tidak boleh bergantung pada .env pengembang. Fitur opsional dimatikan dan kunci dikosongkan;
+        | tes yang membutuhkannya menyalakan sendiri lewat config(). Ini juga mencegah tes memakai kunci asli.
+        -->
+        <env name="ARCHIVE_PLANNER_ENABLED" value="true"/>
+        <env name="ARCHIVE_SECURITY_HEADERS" value="true"/>
+        <env name="ARCHIVE_CHATBOT_ENABLED" value="false"/>
+        <env name="GEMINI_API_KEY" value=""/>
+        <env name="GOOGLE_MAPS_BROWSER_KEY" value=""/>
+        <env name="GOOGLE_MAPS_SERVER_KEY" value=""/>
+        <env name="GOOGLE_MAPS_MAP_ID" value="DEMO_MAP_ID"/>
     </php>
 </phpunit>

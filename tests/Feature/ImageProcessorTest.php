@@ -100,4 +100,11 @@ class ImageProcessorTest extends TestCase
             }
         }
     }
+
+    public function test_images_that_would_not_fit_in_php_memory_are_rejected_before_gd_opens_them(): void
+    {
+        $this->assertTrue(ImageProcessor::fitsInMemory(2000, 1500, '512M'));
+        $this->assertFalse(ImageProcessor::fitsInMemory(8000, 8000, '128M'));
+        $this->assertTrue(ImageProcessor::fitsInMemory(8000, 8000, '-1'));
+    }
 }

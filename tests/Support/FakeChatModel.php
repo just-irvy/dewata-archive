@@ -32,9 +32,13 @@ final class FakeChatModel implements ChatModel
         return ['role' => 'model', 'parts' => [['functionCall' => ['name' => $name, 'args' => $args]]]];
     }
 
-    public function generate(string $systemPrompt, array $contents, array $functionDeclarations): array
+    /** @var array<int, bool> Nilai allowCalls per panggilan. */
+    public array $allowCalls = [];
+
+    public function generate(string $systemPrompt, array $contents, array $functionDeclarations, bool $allowCalls = true): array
     {
         $this->received[] = $contents;
+        $this->allowCalls[] = $allowCalls;
         $this->calls++;
 
         $step = array_shift($this->script) ?? self::say('Selesai.');

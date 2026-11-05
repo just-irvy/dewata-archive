@@ -43,6 +43,13 @@ final class ImageProcessor
     {
         $meta = self::inspect($source);
 
+        // GD membuka gambar sebagai bitmap penuh (sekitar 5 byte per piksel, lebih saat diperkecil). Gambar
+        // 8000x8000 butuh ratusan MB; melebihi memory_limit menghasilkan fatal error yang tidak bisa ditangkap
+        // dan tampil sebagai halaman 500. Ditolak lebih dulu dengan pesan yang jelas.
+        if (! self::fitsInMemory($meta['width'], $meta['height'])) {
+            throw new InvalidArgumentException('gambar terlalu besar untuk diproses server ini, perkecil ke lebar sekitar 4000 piksel');
+        }
+
         // Tanpa dukungan yang dibutuhkan, berkas disalin apa adanya. Itu lebih baik daripada merusak orientasi.
         $canRecode = function_exists('imagecreatetruecolor')
             && ! ($meta['ext'] === 'jpg' && ! function_exists('exif_read_data'))
@@ -118,5 +125,37 @@ final class ImageProcessor
         }
 
         return imagerotate($image, $angle, 0) ?: $image;
+    }
+
+    /** Perkiraan apakah bitmap gambar (ditambah salinan saat diperkecil) muat di sisa memory_limit. */
+    public static function fitsInMemory(int $width, int $height, ?string $limit = null): bool
+    {
+        $bytes = self::bytes($limit ?? (string) ini_get('memory_limit'));
+
+        if ($bytes <= 0) {
+            return true;
+        }
+
+        $needed = (int) ($width * $height * 5 * 1.8);
+
+        return memory_get_usage(true) + $needed < $bytes;
+    }
+
+    private static function bytes(string $value): int
+    {
+        $value = trim($value);
+        if ($value === '' || $value === '-1') {
+            return -1;
+        }
+
+        $unit = strtolower(substr($value, -1));
+        $number = (int) $value;
+
+        return match ($unit) {
+            'g' => $number * 1024 ** 3,
+            'm' => $number * 1024 ** 2,
+            'k' => $number * 1024,
+            default => (int) $value,
+        };
     }
 }

@@ -28,8 +28,8 @@ final class ChatPrompt
             : '';
 
         $planner = config('archive.features.planner')
-            ? "Untuk rencana lengkap per hari, arahkan pengguna ke halaman Planner di situs ini (path /planner). Jangan menyusun itinerary jam demi jam sendiri."
-            : "Fitur Planner sedang dinonaktifkan; jangan mengarahkan pengguna ke sana.";
+            ? 'Untuk rencana lengkap per hari, arahkan pengguna ke halaman Planner di situs ini (path /planner). Jangan menyusun itinerary jam demi jam sendiri.'
+            : 'Fitur Planner sedang dinonaktifkan; jangan mengarahkan pengguna ke sana.';
 
         return <<<PROMPT
 Anda adalah asisten The Dewata Archive, arsip perjalanan Bali yang dikurasi. Hari ini {$today}.

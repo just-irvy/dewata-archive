@@ -209,11 +209,15 @@ final class ChatTools
         $outside = collect();
         if ($hotels->isEmpty() && $hasBudget) {
             // Tidak ada yang cocok: tunjukkan yang terdekat dengan budget, diberi tanda jelas "di luar budget".
+            // Jarak dihitung di database agar tidak bergantung pada 60 hotel termurah saja.
             $target = $max ?? $min;
-            $outside = (new HotelSearch(['region' => $region, 'type' => $type, 'sort' => 'harga']))->query()
-                ->whereNotNull('price_min')->limit(60)->get()
-                ->sortBy(fn (Hotel $h) => abs($h->price_min - $target))
-                ->take(3)->values();
+            $outside = (new HotelSearch(['region' => $region, 'type' => $type]))->query()
+                ->whereNotNull('price_min')
+                ->reorder()
+                ->orderByRaw('abs(price_min - ?)', [$target])
+                ->orderBy('name')
+                ->limit(3)
+                ->get();
         }
 
         return [
@@ -225,8 +229,12 @@ final class ChatTools
                 'filter_diabaikan' => $ignored,
                 'catatan' => $this->hotelNote($hotels->isEmpty(), $hasBudget, $outside->isNotEmpty()),
             ],
-            'cards' => $hotels->map(fn (Hotel $h) => $this->hotelCard($h, false))
-                ->merge($outside->map(fn (Hotel $h) => $this->hotelCard($h, true)))->all(),
+            // toBase(): map() pada koleksi Eloquent KOSONG tetap menghasilkan koleksi Eloquent, dan merge()
+            // miliknya memanggil getKey() pada setiap item. Dengan array kartu itu crash, sehingga
+            // "hotel terdekat di luar budget" dulu tidak pernah sampai ke pengguna.
+            'cards' => $hotels->toBase()->map(fn (Hotel $h) => $this->hotelCard($h, false))
+                ->merge($outside->toBase()->map(fn (Hotel $h) => $this->hotelCard($h, true)))
+                ->values()->all(),
         ];
     }
 

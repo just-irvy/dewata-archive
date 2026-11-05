@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\HotelType;
 use App\Enums\PriceBasis;
 use App\Enums\PublishStatus;
 use App\Enums\VerificationStatus;
@@ -11,8 +10,10 @@ use App\Models\Place;
 use App\Models\Region;
 use App\Services\Chat\ChatException;
 use App\Services\Chat\ChatModel;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Services\Chat\ChatPrompt;
+use App\Services\Chat\ChatTools;
 use App\Services\Chat\GeminiChatModel;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Tests\Support\FakeChatModel;
@@ -229,7 +230,7 @@ class ChatTest extends TestCase
     {
         Region::factory()->create(['slug' => 'gianyar-uji', 'name' => 'Gianyar Uji']);
 
-        $this->assertStringContainsString('gianyar-uji (Gianyar Uji)', \App\Services\Chat\ChatPrompt::system(app(\App\Services\Chat\ChatTools::class)->catalogOptions()));
+        $this->assertStringContainsString('gianyar-uji (Gianyar Uji)', ChatPrompt::system(app(ChatTools::class)->catalogOptions()));
     }
 
     public function test_gemini_adapter_sends_thinking_level_and_key_header(): void
@@ -321,5 +322,48 @@ class ChatTest extends TestCase
 
         config(['chatbot.enabled' => false]);
         $this->get('/')->assertOk()->assertDontSee('Tanya Arsip');
+    }
+
+    public function test_the_closing_call_after_the_tool_cap_forbids_new_tool_calls(): void
+    {
+        config(['chatbot.max_tool_rounds' => 1]);
+
+        $fake = $this->fake([
+            FakeChatModel::call('get_catalog_options'),
+            FakeChatModel::call('get_catalog_options'),
+            FakeChatModel::say('Jawaban akhir.'),
+        ]);
+
+        $this->ask()->assertOk()->assertJsonPath('answer', 'Jawaban akhir.');
+
+        $this->assertSame([true, true, false], $fake->allowCalls);
+    }
+
+    public function test_gemini_payload_keeps_tools_but_sets_mode_none_when_calls_are_not_allowed(): void
+    {
+        Http::fake(['*' => Http::response(['candidates' => [['content' => ['parts' => [['text' => 'ok']]]]]])]);
+        $declarations = [['name' => 'get_catalog_options', 'description' => 'x']];
+
+        (new GeminiChatModel)->generate('sistem', [['role' => 'user', 'parts' => [['text' => 'hai']]]], $declarations, false);
+
+        Http::assertSent(fn ($request) => $request['toolConfig']['functionCallingConfig']['mode'] === 'NONE'
+            && $request['tools'][0]['functionDeclarations'][0]['name'] === 'get_catalog_options');
+    }
+
+    public function test_closest_hotels_outside_the_budget_are_ordered_by_price_distance(): void
+    {
+        $this->hotel('Hotel Sangat Mahal', 5000000);
+        $this->hotel('Hotel Agak Mahal', 900000);
+        $this->hotel('Hotel Paling Dekat', 450000);
+
+        $this->fake([
+            FakeChatModel::call('search_hotels', ['price_max' => 300000]),
+            FakeChatModel::say('Belum ada yang masuk budget.'),
+        ]);
+
+        $cards = collect($this->ask('hotel di bawah 300rb')->assertOk()->json('cards'));
+
+        $this->assertSame(['Hotel Paling Dekat', 'Hotel Agak Mahal', 'Hotel Sangat Mahal'], $cards->pluck('title')->all());
+        $this->assertTrue($cards->every(fn ($c) => str_contains((string) $c['note'], 'Di luar budget')));
     }
 }

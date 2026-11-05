@@ -29,11 +29,11 @@ return [
     // Pembatasan laju. Kunci: user bila login, IP bila tamu. global_daily_cap menghentikan
     // seluruh chatbot bila total pertanyaan sehari melewati batas (pengaman tagihan).
     'rate' => [
-    'per_minute' => (int) env('ARCHIVE_CHATBOT_PER_MINUTE', 8),
-    'per_day_user' => (int) env('ARCHIVE_CHATBOT_PER_DAY_USER', 100),
-    'per_day_guest' => (int) env('ARCHIVE_CHATBOT_PER_DAY_GUEST', 40),
-    'global_daily_cap' => (int) env('ARCHIVE_CHATBOT_DAILY_CAP', 2000),
-],
+        'per_minute' => (int) env('ARCHIVE_CHATBOT_PER_MINUTE', 8),
+        'per_day_user' => (int) env('ARCHIVE_CHATBOT_PER_DAY_USER', 100),
+        'per_day_guest' => (int) env('ARCHIVE_CHATBOT_PER_DAY_GUEST', 40),
+        'global_daily_cap' => (int) env('ARCHIVE_CHATBOT_DAILY_CAP', 2000),
+    ],
 
     'greeting' => 'Halo, saya asisten arsip. Saya bisa mencarikan tempat wisata dan hotel dari katalog The Dewata Archive, termasuk hotel sesuai kisaran harga per malam yang Anda mau. Mau mulai dari mana?',
 

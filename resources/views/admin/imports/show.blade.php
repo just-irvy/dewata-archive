@@ -66,6 +66,22 @@
         </section>
     @endif
 
+    @if (! $batch->isCommitted() || auth()->user()->can('rollback-import'))
+        <form method="POST" action="{{ route('admin.imports.destroy', $batch->id) }}" class="mt-12 max-w-3xl border-t border-brass/60 pt-4"
+              onsubmit="return confirm('{{ $batch->isCommitted() ? 'Hapus riwayat impor ini? Tempat dan hotel yang sudah dibuat tetap ada, tetapi Rollback tidak bisa dipakai lagi.' : 'Batalkan dan hapus impor ini? Belum ada data yang dibuat.' }}')">
+            @csrf
+            @method('DELETE')
+            <p class="text-sm text-ink-soft">
+                @if ($batch->isCommitted())
+                    Menghapus riwayat tidak menghapus tempat dan hotel yang sudah dibuat. Rollback untuk batch ini tidak akan tersedia lagi.
+                @else
+                    Menghapus batch ini membuang berkas dan seluruh barisnya dari area staging. Tidak ada tempat atau hotel yang dibuat atau dihapus.
+                @endif
+            </p>
+            <button type="submit" class="btn btn-link text-oxblood">{{ $batch->isCommitted() ? 'Hapus riwayat impor' : 'Batalkan dan hapus impor ini' }}</button>
+        </form>
+    @endif
+
     <section aria-labelledby="baris" class="mt-14">
         <h2 id="baris" class="text-2xl">Baris</h2>
         <nav aria-label="Saring baris" class="mt-3 flex flex-wrap gap-2">

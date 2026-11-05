@@ -50,7 +50,8 @@ class HomeDesignTest extends TestCase
         SiteSetting::put(SiteSetting::HOME_COVER, ['path' => 'site/x.jpg', 'alt_text' => 'Sawah', 'credit' => 'Penguji']);
         $html = $this->get('/')->assertOk()->assertSee('Foto: Penguji')->getContent();
 
-        $this->assertSame(1, substr_count($html, '<header'));
+        // Hanya masthead yang dihitung. Komponen lain (misalnya widget chat) boleh punya <header> sendiri.
+        $this->assertSame(1, substr_count($html, 'data-masthead'));
         $this->assertStringContainsString('Gulir ke arsip', $html);
     }
 

@@ -27,7 +27,10 @@ return [
         // Tingkat "thinking" Gemini 3.x: minimal, low, medium, high. Bawaan model adalah medium, yang
         // lambat untuk chat. Kosongkan untuk memakai bawaan model. Diabaikan untuk model gemini-2.x.
         'thinking_level' => env('GEMINI_THINKING_LEVEL', 'low'),
-        'max_output_tokens' => (int) env('GEMINI_MAX_OUTPUT_TOKENS', 800),
+        // Pada model ber-"thinking" (Gemini 3.x), token berpikir ikut menghabiskan batas ini. Batas yang terlalu
+        // kecil membuat jawaban terpotong atau kosong (finishReason MAX_TOKENS), yang tampil sebagai
+        // "asisten tidak tersedia". Panjang jawaban tetap dibatasi oleh instruksi gaya di ChatPrompt.
+        'max_output_tokens' => (int) env('GEMINI_MAX_OUTPUT_TOKENS', 2048),
     ],
 
     'postmark' => [

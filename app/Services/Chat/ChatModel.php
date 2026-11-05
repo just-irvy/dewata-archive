@@ -10,10 +10,12 @@ interface ChatModel
 {
     /**
      * @param  array<int, array<string, mixed>>  $contents  Riwayat dalam format Gemini (role + parts).
-     * @param  array<int, array<string, mixed>>  $functionDeclarations  Tool yang boleh dipanggil. Kosong berarti tanpa tool.
-     * @return array<string, mixed>  Satu content milik model: ['role' => 'model', 'parts' => [...]].
+     * @param  array<int, array<string, mixed>>  $functionDeclarations  Tool yang dikenal model. Kosong berarti tanpa tool.
+     * @param  bool  $allowCalls  False memaksa jawaban teks: tool tetap dideklarasikan (riwayat berisi
+     *                            functionCall tetap sah) tetapi model tidak boleh memanggilnya lagi.
+     * @return array<string, mixed> Satu content milik model: ['role' => 'model', 'parts' => [...]].
      *
      * @throws ChatException
      */
-    public function generate(string $systemPrompt, array $contents, array $functionDeclarations): array;
+    public function generate(string $systemPrompt, array $contents, array $functionDeclarations, bool $allowCalls = true): array;
 }
