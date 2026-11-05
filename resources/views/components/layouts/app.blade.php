@@ -37,5 +37,7 @@
     @endif
 
     <x-site-footer :wide="true" />
+
+    <x-chat-widget />
 </body>
 </html>

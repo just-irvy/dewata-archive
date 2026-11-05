@@ -2,6 +2,7 @@ import './bootstrap';
 
 import Alpine from 'alpinejs';
 
+import { registerChat } from './chat/index.mjs';
 import { registerMaps } from './maps/index.mjs';
 import { registerPlanner } from './planner/index.mjs';
 
@@ -13,6 +14,7 @@ import '@fontsource/courier-prime/400.css';
 
 registerMaps(Alpine);
 registerPlanner(Alpine);
+registerChat(Alpine);
 
 window.Alpine = Alpine;
 Alpine.start();

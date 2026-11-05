@@ -24,6 +24,12 @@ Route::get('/regions/{slug}', [Site\RegionController::class, 'show'])->name('reg
 Route::get('/hotels', [Site\HotelController::class, 'index'])->middleware('throttle:search')->name('hotels.index');
 Route::get('/hotels/{slug}', [Site\HotelController::class, 'show'])->name('hotels.show');
 
+/*
+| Asisten chat (FILE 17, Fase 6). Hanya menjawab dari katalog terbit lewat tool allowlist.
+| Mati total (404) bila ARCHIVE_CHATBOT_ENABLED=false atau GEMINI_API_KEY kosong.
+*/
+Route::post('/chat', Site\ChatController::class)->middleware('throttle:chat')->name('chat.ask');
+
 Route::get('/collections/{slug}', [Site\CollectionController::class, 'show'])->name('collections.show');
 
 /*

@@ -12,7 +12,7 @@ Panduan Bali yang dikurasi, disusun sebagai arsip pribadi: tempat, wilayah, peng
 | 3 Maps | Peta, marker, rute jalan, fallback jujur | Selesai |
 | 4 Planner | Mode Rekomendasi (wizard 6 langkah) dan Manual, editor bersama, draf tamu, simpan ke akun | Selesai |
 | 5 Hardening | Header keamanan, rate limit, retensi draf tamu, lokal dan zona waktu, CI | Selesai |
-| 6 Chatbot Gemini | Adapter backend, tool calling, sumber jawaban | Belum dimulai, menunggu konfirmasi |
+| 6 Chatbot Gemini | Adapter backend, tool calling, sumber jawaban | Kode tersedia, dimatikan secara bawaan. Lihat docs/CHATBOT.md |
 
 ## Menjalankan secara lokal
 

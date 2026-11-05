@@ -10,6 +10,8 @@ use App\Models\Tag;
 use App\Planner\ClaimGuestDrafts;
 use App\Planner\GuestDrafts;
 use App\Policies\AdminOnlyPolicy;
+use App\Services\Chat\ChatModel;
+use App\Services\Chat\GeminiChatModel;
 use App\Services\Maps\GoogleRoutesProvider;
 use App\Services\Maps\NullRouteProvider;
 use App\Services\Maps\RouteProvider;
@@ -35,6 +37,10 @@ class ArchiveServiceProvider extends ServiceProvider
             ? new GoogleRoutesProvider
             : new NullRouteProvider);
 
+        // Chatbot (Fase 6): orkestrator hanya mengenal ChatModel. Mengganti penyedia model berarti
+        // mengganti satu binding ini.
+        $this->app->bind(ChatModel::class, GeminiChatModel::class);
+
         // Perubahan cookie dalam satu request terkumpul di satu instance. Cache token terikat ke objek request.
         $this->app->singleton(GuestDrafts::class);
     }
@@ -50,6 +56,11 @@ class ArchiveServiceProvider extends ServiceProvider
         RateLimiter::for('planner-create', fn (Request $request) => Limit::perMinute(10)->by($by($request)));
         RateLimiter::for('planner-edit', fn (Request $request) => Limit::perMinute(120)->by($by($request)));
         RateLimiter::for('search', fn (Request $request) => Limit::perMinute(90)->by($by($request)));
+        // Chatbot: batas per menit dan per hari. Setiap pertanyaan berbiaya, jadi tamu dibatasi lebih ketat.
+        RateLimiter::for('chat', fn (Request $request) => [
+            Limit::perMinute((int) config('chatbot.rate.per_minute'))->by('chat-m:'.$by($request)),
+            Limit::perDay((int) config($request->user() ? 'chatbot.rate.per_day_user' : 'chatbot.rate.per_day_guest'))->by('chat-d:'.$by($request)),
+        ]);
 
         Paginator::defaultView('vendor.pagination.archive');
         Paginator::defaultSimpleView('vendor.pagination.archive');

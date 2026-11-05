@@ -14,6 +14,22 @@ return [
     |
     */
 
+    /*
+    | Gemini API (FILE 17). Kunci hanya dibaca server dan tidak pernah dikirim ke browser.
+    | Nama model dibuat dapat diganti lewat .env karena nama model Gemini berganti seiring waktu.
+    | Periksa daftar model dan kebijakan kunci terbaru di https://ai.google.dev/gemini-api/docs
+    */
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-3.5-flash'),
+        'base_url' => env('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta'),
+        'timeout' => (int) env('GEMINI_TIMEOUT', 20),
+        // Tingkat "thinking" Gemini 3.x: minimal, low, medium, high. Bawaan model adalah medium, yang
+        // lambat untuk chat. Kosongkan untuk memakai bawaan model. Diabaikan untuk model gemini-2.x.
+        'thinking_level' => env('GEMINI_THINKING_LEVEL', 'low'),
+        'max_output_tokens' => (int) env('GEMINI_MAX_OUTPUT_TOKENS', 800),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],
