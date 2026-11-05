@@ -98,15 +98,17 @@
 
     <div id="isi-beranda" class="{{ $wide }} scroll-mt-4">
 
-        {{-- 2. BERKAS PILIHAN: satu cerita, bukan carousel (FILE 03). --}}
-        @if ($featured)
+        {{-- 2. BERKAS PILIHAN: satu sorotan tampil sebagai cerita; dua atau lebih sebagai korsel Pilihan Editor. --}}
+        @if ($picks->count() >= 2)
+            <x-editor-picks :picks="$picks" />
+        @elseif ($featured)
             @php
                 $coords = \App\Support\ArchiveCode::dms($featured->lat, $featured->lng);
                 $access = $featured->accessibility_status === \App\Enums\VerificationStatus::Verified
                     ? collect((array) $featured->accessibility)->filter(fn ($v) => $v === 'yes')->keys()->map(fn ($k) => config("archive.accessibility_attributes.$k"))->filter()->join(', ')
                     : null;
             @endphp
-            <section aria-labelledby="sorotan" class="mt-16 lg:mt-20">
+            <section aria-labelledby="sorotan" class="mt-16 lg:mt-20" data-reveal="scale">
                 {{-- featured-file: saat ditunjuk kursor atau difokus keyboard, berkas terangkat dari tempatnya (lihat app.css). --}}
                 <div class="featured-file">
                 <div class="featured-file__sheet archive-frame p-5 sm:p-8">
@@ -165,7 +167,7 @@
         @else
             {{-- 3. WILAYAH: indeks bergaya buku besar. --}}
             @if ($regions->isNotEmpty())
-                <section aria-labelledby="wilayah" class="mt-16 lg:mt-20">
+                <section aria-labelledby="wilayah" class="mt-16 lg:mt-20" data-reveal data-reveal-group>
                     <p class="kicker text-rust">[Indeks wilayah]</p>
                     <h2 id="wilayah" class="mt-1 text-3xl">Telusuri menurut wilayah</h2>
                     <ul class="mt-6 grid border-l border-t border-ink/25 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
@@ -186,7 +188,7 @@
 
             {{-- 4. TEMPAT TERBARU --}}
             @if ($places->isNotEmpty())
-                <section aria-labelledby="terbaru" class="mt-16 lg:mt-20">
+                <section aria-labelledby="terbaru" class="mt-16 lg:mt-20" data-reveal>
                     <div class="flex flex-wrap items-end justify-between gap-4">
                         <div>
                             <p class="kicker text-rust">[Catatan terakhir]</p>
@@ -194,9 +196,9 @@
                         </div>
                         <a class="kicker text-rust hover:text-ink" href="{{ route('places.index') }}">Lihat seluruh {{ $stats['places'] }} entri <span aria-hidden="true">→</span></a>
                     </div>
-                    <ul class="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+                    <ul class="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4" data-reveal-group>
                         @foreach ($places as $place)
-                            <li><x-dossier-card :place="$place" :saved="in_array($place->id, $saved, true)" /></li>
+                            <li data-reveal><x-dossier-card :place="$place" :saved="in_array($place->id, $saved, true)" /></li>
                         @endforeach
                     </ul>
                 </section>
@@ -205,7 +207,7 @@
 
         {{-- 5. PENGINAPAN: kartu terpisah, tidak pernah dijumlahkan ke biaya perjalanan. --}}
         @if ($hotels->isNotEmpty())
-            <section aria-labelledby="penginapan" class="mt-16 lg:mt-20">
+            <section aria-labelledby="penginapan" class="mt-16 lg:mt-20" data-reveal>
                 <div class="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <p class="kicker text-brass-deep">[Penginapan · non-komersial]</p>
@@ -224,7 +226,7 @@
 
         {{-- 6. AJAKAN PERENCANA --}}
         @if (config('archive.features.planner'))
-            <section aria-labelledby="rencana" class="archive-slip relative mb-16 mt-16 overflow-hidden p-6 sm:p-10 lg:mb-20 lg:mt-20">
+            <section aria-labelledby="rencana" class="archive-slip relative mb-16 mt-16 overflow-hidden p-6 sm:p-10 lg:mb-20 lg:mt-20" data-reveal="scale">
                 <span aria-hidden="true" class="pointer-events-none absolute -right-2 top-4 hidden select-none font-display text-[6.5rem] font-black uppercase leading-none text-ink/[0.06] sm:block">Itinera</span>
                 <div class="relative max-w-3xl">
                     <p class="kicker flex flex-wrap items-center gap-3"><span class="stamp stamp-solid">Modul perjalanan</span><span class="text-ink">Dua cara memulai</span></p>

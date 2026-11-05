@@ -16,6 +16,14 @@ return [
     'max_history_messages' => 10,
     'max_history_chars' => 1200,
 
+    // Percakapan tersimpan, HANYA untuk pengguna yang login (tamu tidak pernah disimpan).
+    // retention_days: pesan lebih tua dihapus archive:purge-chat (dijadwalkan harian).
+    // widget_messages: jumlah pesan terakhir yang dimuat ulang di widget setiap halaman.
+    // max_stored_messages: batas pesan per akun; yang lebih lama dihapus saat pesan baru masuk.
+    'retention_days' => (int) env('ARCHIVE_CHATBOT_RETENTION_DAYS', 30),
+    'widget_messages' => 30,
+    'max_stored_messages' => 200,
+
     // Berapa kali model boleh memanggil tool dalam satu pertanyaan.
     'max_tool_rounds' => 4,
 

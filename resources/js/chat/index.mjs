@@ -1,4 +1,4 @@
-import { buildHistory, describeError } from './helpers.mjs';
+import { buildHistory, describeError, initialMessages } from './helpers.mjs';
 
 const REQUEST_TIMEOUT_MS = 70000;
 
@@ -13,7 +13,18 @@ export function registerChat(Alpine) {
         busy: false,
         error: null,
         draft: '',
-        messages: [{ role: 'assistant', text: config.greeting, cards: [], notes: [], local: true }],
+        messages: initialMessages(config.greeting, config.history),
+        barHeight: 0,
+
+        init() {
+            // Tinggi bilah diukur dari elemennya (0 bila bilah tidak tampil), lalu dipakai jendela dan pengganjal.
+            const bar = this.$refs.bar;
+            if (!bar) return;
+            const measure = () => { this.barHeight = bar.offsetHeight; };
+            measure();
+            if (typeof ResizeObserver !== 'undefined') new ResizeObserver(measure).observe(bar);
+            window.addEventListener('resize', measure);
+        },
 
         toggle() {
             this.open ? this.close() : this.show();
@@ -21,6 +32,7 @@ export function registerChat(Alpine) {
 
         show() {
             this.open = true;
+            this.scrollDown();
             this.$nextTick(() => this.$refs.input?.focus());
         },
 
@@ -29,9 +41,55 @@ export function registerChat(Alpine) {
             this.open = false;
         },
 
+        // Pengguna login: hapus percakapan tersimpan di server, lalu mulai dari sapaan.
+        async startOver() {
+            if (this.busy || !this.config.clearEndpoint) return;
+            this.busy = true;
+            this.error = null;
+
+            try {
+                const response = await fetch(this.config.clearEndpoint, {
+                    method: 'DELETE',
+                    credentials: 'same-origin',
+                    headers: {
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                    },
+                });
+
+                if (!response.ok) {
+                    this.error = describeError(response.status, await response.json().catch(() => null));
+                    return;
+                }
+
+                this.messages = initialMessages(this.config.greeting, []);
+            } catch {
+                this.error = describeError(0, null);
+            } finally {
+                this.busy = false;
+                this.$nextTick(() => this.$refs.input?.focus());
+            }
+        },
+
         ask(text) {
             this.draft = text;
             this.send();
+        },
+
+        // Pertanyaan dari luar jendela (event archive-chat-ask, bilah bawah): buka jendela lalu kirim.
+        openWith(text) {
+            const question = typeof text === 'string' ? text.trim() : '';
+            this.show();
+            if (question.length >= 2) {
+                this.draft = question;
+                this.$nextTick(() => this.send());
+            }
+        },
+
+        // Enter pada kolom bilah: tertutup berarti buka (dan kirim bila sudah ada teks), terbuka berarti kirim.
+        submitBar() {
+            this.open ? this.send() : this.openWith(this.draft);
         },
 
         scrollDown() {
@@ -45,7 +103,8 @@ export function registerChat(Alpine) {
             const text = this.draft.trim();
             if (this.busy || text.length < 2) return;
 
-            const history = buildHistory(this.messages, this.config.maxHistory);
+            // Pengguna login tidak mengirim riwayat: server memakai percakapan tersimpan.
+            const history = this.config.loggedIn ? [] : buildHistory(this.messages, this.config.maxHistory);
 
             this.messages.push({ role: 'user', text });
             this.draft = '';

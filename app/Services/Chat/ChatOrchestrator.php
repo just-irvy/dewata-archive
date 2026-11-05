@@ -103,8 +103,10 @@ final class ChatOrchestrator
             throw new ChatException('empty');
         }
 
-        // Nominal budget yang diucapkan pengguna di pesan ini juga sah disebut ulang.
-        foreach (PriceGuard::mentionedAmounts($message) as $amount) {
+        // Nominal yang pernah diucapkan pengguna, di pesan ini maupun di riwayat, sah disebut ulang
+        // (misalnya model mengingatkan budget "di bawah Rp700.000" dari pertanyaan sebelumnya).
+        $userTexts = array_column(array_filter($history, fn (array $t) => $t['role'] === 'user'), 'text');
+        foreach (PriceGuard::mentionedAmounts(implode(' ', [...$userTexts, $message])) as $amount) {
             $allowedPrices[] = $amount;
         }
 

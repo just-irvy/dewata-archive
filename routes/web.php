@@ -29,6 +29,7 @@ Route::get('/hotels/{slug}', [Site\HotelController::class, 'show'])->name('hotel
 | Mati total (404) bila ARCHIVE_CHATBOT_ENABLED=false atau GEMINI_API_KEY kosong.
 */
 Route::post('/chat', Site\ChatController::class)->middleware('throttle:chat')->name('chat.ask');
+Route::delete('/chat/history', [Site\ChatController::class, 'clear'])->middleware(['auth', 'throttle:planner-edit'])->name('chat.clear');
 
 Route::get('/collections/{slug}', [Site\CollectionController::class, 'show'])->name('collections.show');
 

@@ -10,7 +10,8 @@
     $moveUrl = route('planner.plans.items.move', ['plan' => $plan->id, 'item' => '__ITEM__']);
 @endphp
 
-<x-layouts.app :title="$plan->title">
+{{-- Editor sudah punya bilah aksi sendiri di ponsel; bilah Tanya Arsip hanya tampil dari lebar md ke atas. --}}
+<x-layouts.app :title="$plan->title" chat-bar="desktop">
     <div
         x-data="plannerEditor(@js(['activeDay' => $activeDay, 'days' => $mapDays]))"
         class="space-y-10"

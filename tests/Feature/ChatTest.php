@@ -14,6 +14,7 @@ use App\Services\Chat\ChatPrompt;
 use App\Services\Chat\ChatTools;
 use App\Services\Chat\GeminiChatModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Tests\Support\FakeChatModel;
@@ -365,5 +366,28 @@ class ChatTest extends TestCase
 
         $this->assertSame(['Hotel Paling Dekat', 'Hotel Agak Mahal', 'Hotel Sangat Mahal'], $cards->pluck('title')->all());
         $this->assertTrue($cards->every(fn ($c) => str_contains((string) $c['note'], 'Di luar budget')));
+    }
+
+    public function test_the_bottom_bar_can_be_limited_to_desktop_for_pages_with_their_own_mobile_bar(): void
+    {
+        $all = Blade::render('<x-chat-widget />');
+        $desktop = Blade::render('<x-chat-widget bar="desktop" />');
+        $none = Blade::render('<x-chat-widget bar="none" />');
+
+        $this->assertStringContainsString('data-chat-bar="all"', $all);
+        $this->assertStringContainsString('Tanya tempat atau hotel', $all);
+        $this->assertStringContainsString('chat-bar hidden md:block', $desktop);
+        $this->assertStringNotContainsString('class="chat-bar', $none);
+        $this->assertStringContainsString('archive-chat-panel', $none);
+    }
+
+    public function test_a_budget_the_user_mentioned_earlier_in_the_conversation_is_not_flagged(): void
+    {
+        $this->fake([FakeChatModel::say('Pencarian sebelumnya memakai budget di bawah Rp700.000 per kamar per malam.')]);
+
+        $this->ask('ada berapa hotel', [
+            ['role' => 'user', 'text' => 'hotel di bawah 700rb'],
+            ['role' => 'model', 'text' => 'Ada lima hotel.'],
+        ])->assertOk()->assertJsonPath('notes', []);
     }
 }

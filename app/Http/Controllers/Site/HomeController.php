@@ -18,12 +18,15 @@ class HomeController extends Controller
     {
         $with = ['region', 'categories', 'media'];
 
-        // Satu cerita unggulan dipilih editor. Bukan slider otomatis.
-        $featured = Place::query()->published()->whereNotNull('featured_at')
-            ->with($with)->orderByDesc('featured_at')->first();
+        // Sorotan pilihan editor, urut dari yang terbaru. Satu sorotan: cerita tunggal.
+        // Dua atau tiga: korsel "Pilihan Editor" yang ringkas (kartu tengah tajam, tetangganya buram),
+        // tanpa putar otomatis. Paling banyak tiga; sorotan yang lebih lama tidak ditampilkan.
+        $picks = Place::query()->published()->whereNotNull('featured_at')
+            ->with($with)->orderByDesc('featured_at')->limit(3)->get();
+        $featured = $picks->first();
 
         $places = Place::query()->published()->with($with)
-            ->when($featured, fn (Builder $q) => $q->whereKeyNot($featured->id))
+            ->when($picks->isNotEmpty(), fn (Builder $q) => $q->whereNotIn('id', $picks->modelKeys()))
             ->orderByDesc('published_at')->orderByDesc('id')
             ->limit(8)->get();
 
@@ -54,13 +57,14 @@ class HomeController extends Controller
             'mapPoints' => $mapPoints->all(),
             'placeTotal' => $stats['places'],
             'featured' => $featured,
+            'picks' => $picks,
             'places' => $places,
             'regions' => $regions,
             'hotels' => $hotels,
             'hotelRegions' => Region::query()->published()
                 ->whereHas('hotels', fn (Builder $q) => $q->published())
                 ->orderBy('name')->get(),
-            'saved' => SavedPlaceIds::for($request->user(), $places->concat($featured ? [$featured] : [])),
+            'saved' => SavedPlaceIds::for($request->user(), $places->concat($picks)),
             'isEmpty' => $featured === null && $places->isEmpty(),
         ]);
     }

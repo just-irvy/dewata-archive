@@ -74,4 +74,52 @@ class HomePageTest extends TestCase
 
         $this->get('/')->assertOk()->assertSee('Rencanakan perjalanan');
     }
+
+    public function test_two_or_more_featured_places_become_the_editor_picks_carousel(): void
+    {
+        $a = Place::factory()->published()->featured()->create(['name' => 'Sorotan Pertama']);
+        $b = Place::factory()->published()->featured()->create(['name' => 'Sorotan Kedua']);
+        Place::factory()->featured()->create(['name' => 'Sorotan Draf']);
+        Place::factory()->published()->create(['name' => 'Tempat Biasa']);
+
+        $html = $this->get('/')->assertOk()
+            ->assertSee('Pilihan editor')
+            ->assertSee('Sorotan Pertama')
+            ->assertSee('Sorotan Kedua')
+            ->assertDontSee('Sorotan Draf')
+            ->assertSee('editorPicks(2)', false)
+            ->assertSee('Sorotan berikutnya')
+            ->getContent();
+
+        // Sorotan tidak diulang di daftar tempat terbaru.
+        $this->assertSame(1, substr_count($html, 'Sorotan Pertama</span>'));
+        $this->assertStringContainsString('Tempat Biasa', $html);
+    }
+
+    public function test_a_single_featured_place_keeps_the_single_story_layout(): void
+    {
+        Place::factory()->published()->featured()->create(['name' => 'Sorotan Tunggal']);
+
+        $this->get('/')->assertOk()->assertSee('Sorotan Tunggal')->assertDontSee('editorPicks(');
+    }
+
+    public function test_home_sections_carry_scroll_reveal_markers(): void
+    {
+        Place::factory()->published()->count(2)->create();
+
+        $this->get('/')->assertOk()->assertSee('data-reveal', false)->assertSee('data-reveal-group', false);
+    }
+
+    public function test_the_editor_picks_carousel_shows_at_most_three_latest_picks(): void
+    {
+        foreach (['Lama', 'Kedua', 'Ketiga', 'Terbaru'] as $i => $name) {
+            Place::factory()->published()->create(['name' => "Sorotan {$name}", 'featured_at' => now()->subDays(3 - $i)]);
+        }
+
+        $html = $this->get('/')->assertOk()->assertSee('editorPicks(3)', false)->getContent();
+
+        $this->assertSame(3, substr_count($html, 'class="picks__card'));
+        $this->assertStringContainsString('Sorotan Terbaru', $html);
+        $this->assertStringNotContainsString('aria-label="1 dari 3: Sorotan Lama', $html);
+    }
 }

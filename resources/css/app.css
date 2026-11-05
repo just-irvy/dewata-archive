@@ -604,3 +604,147 @@
         animation: none !important;
     }
 }
+
+/*
+| Tanya Arsip, tampilan C2 "Laci Arsip": bilah di tepi bawah dan laci samping (ponsel: dari bawah).
+*/
+@layer components {
+    .chat-bar {
+        position: fixed;
+        inset: auto 0 0 0;
+        z-index: 40;
+        border-top: 1px solid color-mix(in srgb, var(--color-ink) 30%, transparent);
+        background-color: var(--color-surface);
+        box-shadow: 0 -8px 24px rgba(32, 39, 35, 0.08);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    /*
+    | Jendela percakapan. Desktop: separuh kanan layar, dari atas sampai bilah bawah. Ponsel: naik dari
+    | bawah selebar layar. Bilah tidak bergerak dan tetap menjadi tempat mengetik. Latar diredupkan tipis.
+    */
+    .chat-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 38;
+        background-color: color-mix(in srgb, var(--color-ink) 15%, transparent);
+    }
+
+    /* --chat-bar-height diukur JavaScript dari tinggi bilah yang sebenarnya, agar tidak ada celah. */
+    .chat-drawer {
+        --chat-bar-height: 0px;
+        position: fixed;
+        inset: auto 0 calc(var(--chat-bar-height) + env(safe-area-inset-bottom, 0px)) 0;
+        z-index: 39;
+        height: 72dvh;
+        background-color: var(--color-surface);
+        color: var(--color-ink);
+        border-top: 1px solid color-mix(in srgb, var(--color-ink) 30%, transparent);
+        box-shadow: 0 -16px 40px rgba(32, 39, 35, 0.14);
+        transition: transform 240ms ease, opacity 240ms ease;
+    }
+
+    .chat-drawer-enter-start { transform: translateY(100%); opacity: 0.6; }
+
+    @media (min-width: 48rem) {
+        .chat-drawer {
+            inset: 0 0 calc(var(--chat-bar-height) + env(safe-area-inset-bottom, 0px)) 50%;
+            height: auto;
+            border-top: 0;
+            border-left: 1px solid color-mix(in srgb, var(--color-ink) 25%, transparent);
+            box-shadow: -16px 0 40px rgba(32, 39, 35, 0.12);
+        }
+
+        .chat-drawer-enter-start { transform: translateX(100%); opacity: 0.6; }
+    }
+
+    .chat-drawer__inner {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+        max-width: 56rem;
+        margin: 0 auto;
+    }
+
+    .chat-drawer-enter-start { transform: translateY(100%); opacity: 0.6; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .chat-drawer { transition: none; }
+        .chat-drawer-enter-start { transform: none; opacity: 1; }
+    }
+}
+
+/*
+| Muncul-saat-digulir. Hanya aktif bila JavaScript ada (html.js), sehingga tanpa JavaScript semua terlihat.
+| data-reveal: memudar masuk sambil naik. data-reveal="scale": memudar masuk sambil membesar (untuk gambar
+| atau blok besar). --reveal-delay diisi JavaScript untuk anak-anak kelompok. Kurangi gerak: tanpa animasi.
+*/
+@layer components {
+    .js [data-reveal] {
+        opacity: 0;
+        transform: translateY(1.5rem);
+        transition: opacity 640ms cubic-bezier(0.2, 0.7, 0.2, 1), transform 640ms cubic-bezier(0.2, 0.7, 0.2, 1);
+        transition-delay: var(--reveal-delay, 0ms);
+        will-change: opacity, transform;
+    }
+
+    .js [data-reveal="scale"] {
+        transform: scale(0.94);
+        transform-origin: center;
+        transition-duration: 820ms;
+    }
+
+    .js [data-reveal].is-revealed {
+        opacity: 1;
+        transform: none;
+        will-change: auto;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .js [data-reveal] {
+            opacity: 1;
+            transform: none;
+            transition: none;
+        }
+    }
+
+    /* Korsel Pilihan Editor: kartu bertumpuk di satu panggung; posisi, skala, buram, dan kepudaran dari JavaScript. */
+    .picks__stage {
+        position: relative;
+        height: clamp(14rem, 30vw, 21rem);
+        overflow: hidden;
+        touch-action: pan-y;
+        user-select: none;
+    }
+
+    .picks__card {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: min(100%, 30rem);
+        margin-left: calc(min(100%, 30rem) / -2);
+        display: block;
+        color: var(--color-ink);
+        text-decoration: none;
+        box-shadow: 0 14px 36px rgba(32, 39, 35, 0.16);
+        transition: transform 480ms cubic-bezier(0.2, 0.7, 0.2, 1), opacity 480ms ease, filter 480ms ease;
+    }
+
+    .picks__card:hover .picks__photo,
+    .picks__card:focus-visible .picks__photo {
+        transform: scale(1.02);
+    }
+
+    .picks__photo {
+        transition: transform 600ms ease;
+    }
+
+    @media (max-width: 40rem) {
+        .picks__card { width: 82%; margin-left: -41%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .picks__card, .picks__photo { transition: none; }
+    }
+}

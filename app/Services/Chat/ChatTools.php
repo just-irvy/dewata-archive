@@ -100,6 +100,37 @@ final class ChatTools
         }
     }
 
+    /**
+     * Kartu terbaru untuk kunci "place:slug" dan "hotel:slug". Record yang tidak lagi terbit dilewati.
+     *
+     * @param  array<int, string>  $keys
+     * @return array<string, array<string, mixed>> kunci => kartu
+     */
+    public function cardsFor(array $keys): array
+    {
+        $slugs = ['place' => [], 'hotel' => []];
+        foreach ($keys as $key) {
+            [$type, $slug] = array_pad(explode(':', (string) $key, 2), 2, '');
+            if (isset($slugs[$type]) && preg_match('/^[a-z0-9-]{1,160}$/', $slug) === 1) {
+                $slugs[$type][] = $slug;
+            }
+        }
+
+        $cards = [];
+        if ($slugs['place'] !== []) {
+            foreach (Place::query()->published()->with(['region', 'media'])->whereIn('slug', array_unique($slugs['place']))->get() as $place) {
+                $cards['place:'.$place->slug] = $this->placeCard($place);
+            }
+        }
+        if ($slugs['hotel'] !== []) {
+            foreach (Hotel::query()->published()->with(['region', 'media'])->whereIn('slug', array_unique($slugs['hotel']))->get() as $hotel) {
+                $cards['hotel:'.$hotel->slug] = $this->hotelCard($hotel, false);
+            }
+        }
+
+        return $cards;
+    }
+
     /** @return array<string, mixed> */
     public function catalogOptions(): array
     {

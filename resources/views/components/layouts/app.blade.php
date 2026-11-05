@@ -1,4 +1,4 @@
-@props(['title' => null, 'description' => null, 'bleed' => false, 'masthead' => 'paper'])
+@props(['title' => null, 'description' => null, 'bleed' => false, 'masthead' => 'paper', 'chatBar' => 'all'])
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -9,6 +9,8 @@
     @if ($description)
         <meta name="description" content="{{ $description }}">
     @endif
+    {{-- Animasi muncul-saat-digulir hanya menyembunyikan elemen bila JavaScript aktif (lihat .js [data-reveal] di app.css). --}}
+    <script>document.documentElement.classList.add('js')</script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="flex min-h-dvh flex-col">
@@ -38,6 +40,6 @@
 
     <x-site-footer :wide="true" />
 
-    <x-chat-widget />
+    <x-chat-widget :bar="$chatBar" />
 </body>
 </html>

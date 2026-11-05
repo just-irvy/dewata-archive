@@ -42,3 +42,21 @@ export function describeError(status, body) {
 
     return 'Asisten sedang tidak tersedia. Katalog, peta, dan planner tetap bisa dipakai.';
 }
+
+/**
+ * Pesan awal widget: sapaan lokal, lalu percakapan tersimpan (hanya ada untuk pengguna login).
+ * Pesan tersimpan tidak pernah dikirim ulang sebagai riwayat; server memakai salinannya sendiri.
+ */
+export function initialMessages(greeting, history = []) {
+    const restored = (Array.isArray(history) ? history : [])
+        .filter((m) => m && typeof m.text === 'string' && m.text.trim() !== '')
+        .map((m) => ({
+            role: m.role === 'user' ? 'user' : 'assistant',
+            text: m.text,
+            cards: Array.isArray(m.cards) ? m.cards : [],
+            notes: Array.isArray(m.notes) ? m.notes : [],
+            restored: true,
+        }));
+
+    return [{ role: 'assistant', text: greeting, cards: [], notes: [], local: true }, ...restored];
+}

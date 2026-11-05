@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { MAX_TURN_CHARS, buildHistory, describeError } from './helpers.mjs';
+import { MAX_TURN_CHARS, buildHistory, describeError, initialMessages } from './helpers.mjs';
 
 test('buildHistory membuang sapaan lokal, pesan gagal, dan pesan kosong', () => {
     const history = buildHistory([
@@ -43,4 +43,34 @@ test('describeError memberi pesan ramah per status', () => {
     assert.equal(describeError(422, { errors: { message: ['Terlalu pendek.'] } }), 'Terlalu pendek.');
     assert.equal(describeError(503, { message: 'Asisten sedang ramai.', code: 'quota' }), 'Asisten sedang ramai.');
     assert.match(describeError(500, null), /tidak tersedia/);
+});
+
+test('initialMessages menaruh sapaan lalu percakapan tersimpan bertanda restored', () => {
+    const messages = initialMessages('Halo', [
+        { role: 'user', text: 'hotel di ubud' },
+        { role: 'assistant', text: 'Ini pilihannya', cards: [{ key: 'hotel:a' }], notes: [] },
+        { role: 'assistant', text: '   ' },
+        null,
+    ]);
+
+    assert.equal(messages.length, 3);
+    assert.deepEqual(messages[0], { role: 'assistant', text: 'Halo', cards: [], notes: [], local: true });
+    assert.equal(messages[1].role, 'user');
+    assert.equal(messages[1].restored, true);
+    assert.deepEqual(messages[2].cards, [{ key: 'hotel:a' }]);
+});
+
+test('initialMessages tanpa riwayat hanya berisi sapaan', () => {
+    assert.equal(initialMessages('Halo').length, 1);
+    assert.equal(initialMessages('Halo', 'bukan array').length, 1);
+});
+
+test('pesan tersimpan tidak ikut dikirim sebagai riwayat dua kali', () => {
+    const history = buildHistory(initialMessages('Halo', [
+        { role: 'user', text: 'a1' },
+        { role: 'assistant', text: 'b1' },
+    ]));
+
+    // buildHistory tetap bekerja pada pesan tersimpan (dipakai tamu), sapaan lokal tetap dibuang.
+    assert.deepEqual(history, [{ role: 'user', text: 'a1' }, { role: 'model', text: 'b1' }]);
 });

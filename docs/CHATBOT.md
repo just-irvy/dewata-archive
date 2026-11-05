@@ -47,3 +47,18 @@ data terbit. Kartu tempat dan hotel dibuat server dari database, bukan dari teks
 
 `php artisan test --filter=Chat` dan `php artisan test --filter=PriceGuard`.
 `npm run test:js` untuk helper widget.
+
+
+## Percakapan tersimpan (pengguna login)
+
+Tamu: percakapan hanya hidup di memori halaman dan hilang saat pindah halaman atau menutup tab. Tidak ada yang disimpan, di browser maupun di server.
+
+Pengguna login: setiap pertanyaan dan jawaban yang berhasil disimpan di tabel chat_messages (satu utas per akun) dan dimuat ulang di widget pada setiap halaman. Konteks untuk Gemini diambil dari salinan server, bukan dari kiriman browser, sehingga riwayat tidak bisa dipalsukan. Kartu tempat dan hotel disimpan sebagai kunci (place:slug, hotel:slug) dan dibangun ulang dari katalog terbit saat dimuat: harga yang sudah berubah tampil dengan angka terbaru, dan record yang tidak lagi terbit tidak muncul. Angka di dalam teks jawaban lama tidak ikut diperbarui, dan widget menandai percakapan lama dengan catatan itu.
+
+Batas: 200 pesan per akun (chatbot.max_stored_messages), 30 pesan terakhir dimuat di widget (chatbot.widget_messages), dan pesan lebih tua dari ARCHIVE_CHATBOT_RETENTION_DAYS (bawaan 30 hari) dihapus oleh archive:purge-chat yang dijadwalkan pukul 03.30. Tombol "Mulai baru" menghapus seluruh percakapan pengguna itu. Menghapus akun menghapus percakapannya (cascade).
+
+Privasi: halaman Kebijakan Privasi wajib menyebut bahwa percakapan pengguna login disimpan di server selama masa simpan itu, dan bahwa isi pertanyaan dikirim ke Google Gemini untuk diproses.
+
+## Tampilan C2
+
+Widget bukan jendela mengambang. Bilah tipis selalu ada di tepi bawah semua halaman publik dan menjadi satu-satunya tempat mengetik: tertutup, tombolnya "Buka"; terbuka, tombolnya "Kirim". Menekan Buka (atau Enter) memunculkan jendela percakapan: di desktop mengisi separuh kanan layar dari atas sampai bilah, di ponsel naik dari bawah selebar layar. Bilah tidak bergerak, dan sisa halaman diredupkan 15 persen; klik di luar jendela menutupnya. Escape atau tombol tutup menutupnya. Halaman yang sudah punya bilah aksi sendiri di ponsel (editor planner) memakai `chat-bar="desktop"` pada layout: di ponsel bilah tidak tampil dan jendela menempel ke tepi bawah; `chat-bar="none"` mematikan bilah tetapi jendela tetap bisa dibuka lewat event `archive-chat-ask`.
