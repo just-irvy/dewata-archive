@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Planner\ManualPlanRequest;
 use App\Http\Requests\Planner\RecommendRequest;
 use App\Models\Hotel;
+use App\Models\Place;
 use App\Models\Region;
 use App\Planner\GuestDrafts;
 use App\Planner\PlanAccess;
@@ -29,6 +30,10 @@ class PlannerController extends Controller
             'recent' => $user
                 ? $user->tripPlans()->latest('updated_at')->limit(3)->get()
                 : $drafts->all()->take(3),
+            // Pratinjau "Susun sendiri": empat tempat terbit nyata, bukan nama karangan.
+            'demoPlaces' => Place::query()->published()->with('region')
+                ->orderByDesc('featured_at')->orderBy('name')
+                ->limit(4)->get(['id', 'region_id', 'name', 'area_label']),
         ]);
     }
 

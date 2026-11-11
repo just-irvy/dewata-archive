@@ -224,15 +224,32 @@
             </section>
         @endif
 
-        {{-- 6. AJAKAN PERENCANA --}}
+        {{-- 6. AJAKAN PERENCANA: dua jalur langsung, judul di tengah. --}}
         @if (config('archive.features.planner'))
-            <section aria-labelledby="rencana" class="archive-slip relative mb-16 mt-16 overflow-hidden p-6 sm:p-10 lg:mb-20 lg:mt-20" data-reveal="scale">
-                <span aria-hidden="true" class="pointer-events-none absolute -right-2 top-4 hidden select-none font-display text-[6.5rem] font-black uppercase leading-none text-ink/[0.06] sm:block">Itinera</span>
-                <div class="relative max-w-3xl">
-                    <p class="kicker flex flex-wrap items-center gap-3"><span class="stamp stamp-solid">Modul perjalanan</span><span class="text-ink">Dua cara memulai</span></p>
-                    <h2 id="rencana" class="mt-4 text-3xl leading-tight sm:text-4xl">Susun perjalanan dengan tempo Anda sendiri</h2>
-                    <p class="mt-4 text-lg leading-relaxed text-ink-soft">Jawab enam pertanyaan singkat untuk mendapat draf per hari beserta alasan setiap pilihan, atau mulai dari arsip kosong dan pilih sendiri setiap tempat. Keduanya bisa dicoba tanpa akun, dan semua isinya tetap bisa Anda ubah.</p>
-                    <div class="mt-6"><x-button :href="route('planner.index')">{{ __('ui.nav.planner') }} <span aria-hidden="true">→</span></x-button></div>
+            <section aria-labelledby="rencana" class="mb-16 mt-16 border-y-[3px] border-double border-ink py-10 sm:py-12 lg:mb-20 lg:mt-20" data-reveal>
+                <div class="mx-auto max-w-2xl text-center">
+                    <h2 id="rencana" class="text-3xl leading-tight sm:text-4xl">Rencanakan perjalanan Anda</h2>
+                    <p class="mx-auto mt-4 max-w-[52ch] text-lg leading-relaxed text-ink-soft">Pilih cara memulai. Keduanya membuka editor yang sama, dengan peta dan rute per hari.</p>
+                    <p class="typewriter mt-3">Tanpa akun. Draf tersimpan {{ config('planner.guest_ttl_days') }} hari di browser ini.</p>
+                </div>
+
+                <div class="mx-auto mt-9 max-w-[880px] divide-y divide-ink/25 border-t border-ink/25">
+                    <a href="{{ route('planner.recommend') }}" class="group flex flex-wrap items-center gap-x-8 gap-y-4 py-6">
+                        <span class="min-w-0 flex-[1_1_20rem]">
+                            <span class="typewriter block">6 pertanyaan</span>
+                            <span class="font-display mt-1 block text-2xl font-bold group-hover:text-rust">Dapatkan rekomendasi</span>
+                            <span class="mt-1 block leading-relaxed text-ink-soft">Arsip menyusun draf per hari dari tempat terverifikasi, lengkap dengan alasan setiap pilihan.</span>
+                        </span>
+                        <span class="btn btn-primary group-hover:bg-rust-deep">Mulai pertanyaan</span>
+                    </a>
+                    <a href="{{ route('planner.manual') }}" class="group flex flex-wrap items-center gap-x-8 gap-y-4 py-6">
+                        <span class="min-w-0 flex-[1_1_20rem]">
+                            <span class="typewriter block">Mulai dari arsip kosong</span>
+                            <span class="font-display mt-1 block text-2xl font-bold group-hover:text-rust">Susun sendiri</span>
+                            <span class="mt-1 block leading-relaxed text-ink-soft">Cari tempat di katalog, masukkan ke hari yang Anda pilih, dan atur urutannya.</span>
+                        </span>
+                        <span class="btn btn-secondary group-hover:bg-ink group-hover:text-paper">Buka arsip kosong</span>
+                    </a>
                 </div>
             </section>
         @endif
